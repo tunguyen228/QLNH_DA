@@ -1,0 +1,23 @@
+.table-card {
+    border-radius: 12px;
+    min-height: 120px;
+    cursor: pointer;
+    transition: transform 0.2s;
+    border: none;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.table-card:hover {
+    transform: translateY(-3px);
+}
+
+.status-empty {
+    background-color: #ffffff;
+    color: #333333;
+    border: 1px solid #e0e0e0;
+}
+
+.status-in-use {
+    background-color: #2e6b36; 
+    color: #ffffff;
+}
