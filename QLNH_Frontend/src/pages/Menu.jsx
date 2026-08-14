@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { Row, Col, Card, Button, Form, InputGroup, Badge, ListGroup } from 'react-bootstrap';
 import { fetchCategories, fetchMenuItems } from '../services/menuService';
 import '../CSS/Menu.css';
-// Nhớ import bootstrap-icons trong file index.html hoặc main.jsx của bạn nếu chưa có
 
 const Menu = () => {
     const [categories, setCategories] = useState([]);
@@ -10,7 +9,6 @@ const Menu = () => {
     const [activeCategory, setActiveCategory] = useState(1); // Mặc định là 1 (Tất cả), kiểu int
     const [cart, setCart] = useState([]);
 
-    // Gọi dữ liệu từ Backend khi component mount
     useEffect(() => {
         const loadInitialData = async () => {
             const cats = await fetchCategories();
@@ -28,7 +26,6 @@ const Menu = () => {
         loadInitialData();
     }, []);
 
-    // Load lại menu khi đổi nhóm món
     useEffect(() => {
         const loadMenuByCat = async () => {
             const items = await fetchMenuItems(activeCategory);
@@ -41,7 +38,6 @@ const Menu = () => {
         return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
     };
 
-    // Tính toán giỏ hàng
     const subTotal = cart.reduce((sum, item) => sum + (item.Gia * item.SoLuong), 0);
     const serviceFee = subTotal * 0.05;
     const total = subTotal + serviceFee;
