@@ -32,6 +32,7 @@ function App() {
                 <Route path="tables" element={<TableMap />} />
                 <Route path="menu" element={<Menu />} />
                 <Route path="theodoi" element={<TheoDoiMon />} />
+                <Route path="menu/:tableId" element={<Menu />} />
             </Route>
         </Routes>
     );

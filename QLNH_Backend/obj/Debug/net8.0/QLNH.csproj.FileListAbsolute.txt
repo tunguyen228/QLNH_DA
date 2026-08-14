@@ -224,3 +224,4 @@
 /Users/mac/Documents/QLNH/QLNH_Backend/bin/Debug/net8.0/System.IdentityModel.Tokens.Jwt.dll
 /Users/mac/Documents/QLNH/QLNH_Backend/bin/Debug/net8.0/Microsoft.Bcl.Cryptography.dll
 /Users/mac/Documents/QLNH/QLNH_Backend/bin/Debug/net8.0/System.Formats.Asn1.dll
+/Users/mac/Documents/QLNH/QLNH_Backend/obj/Debug/net8.0/QLNH.sourcelink.json

@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Card, Button, Spinner } from 'react-bootstrap';
+import { useNavigate } from 'react-router-dom';
 import '../CSS/TableMap.css';
 
 const TableMap = () => {
     const [allTables, setAllTables] = useState([]);
     const [currentFloor, setCurrentFloor] = useState(1);
     const [loading, setLoading] = useState(true);
+    const navigate = useNavigate();
 
     useEffect(() => {
         fetchTableData();
@@ -55,7 +57,9 @@ const TableMap = () => {
     };
 
     const handleTableClick = (tableId) => {
-        console.log("Điều hướng tới bàn:", tableId);
+        console.log("Điều hướng tới menu của bàn:", tableId);
+        // ĐÃ SỬA: Thêm /dashboard/ vào trước đường dẫn
+        navigate(`/dashboard/menu/${tableId}`);
     };
 
     if (loading) return <div className="text-center mt-5"><Spinner animation="border" /></div>;
