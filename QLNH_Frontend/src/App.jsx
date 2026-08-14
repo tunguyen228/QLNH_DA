@@ -1,10 +1,11 @@
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
-import LoginForm from './LoginForm';
-import GiaoDienPhucVu from './pages/SideBar';
+import LoginForm from './pages/LoginForm';
+import GiaoDienPhucVu from './pages/GiaoDienPhucVu';
 import TableMap from './pages/TableMap';
 import Menu from './pages/Menu';
 import TheoDoiMon from './pages/TheoDoiMon';
+import SideBar from "./components/SideBar";
 
 function App() {
     const ProtectedRoute = ({ children }) => {
@@ -27,7 +28,6 @@ function App() {
                     </ProtectedRoute>
                 }
             >
-                
                 <Route index element={<Navigate to="tables" replace />} />
                 <Route path="tables" element={<TableMap />} />
                 <Route path="menu" element={<Menu />} />

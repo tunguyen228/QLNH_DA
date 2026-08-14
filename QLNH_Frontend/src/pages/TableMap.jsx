@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Card, Button, Spinner } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import '../CSS/TableMap.css';
+import { getTableMap } from '../services/tableService';   // trước: './tableService'
 
 const TableMap = () => {
     const [allTables, setAllTables] = useState([]);
@@ -15,13 +16,7 @@ const TableMap = () => {
 
     const fetchTableData = async () => {
         try {
-            const response = await fetch('http://localhost:5000/api/waiter/Table/map');
-
-            if (!response.ok) {
-                throw new Error('Lỗi khi lấy dữ liệu từ server');
-            }
-
-            const dbData = await response.json();
+            const dbData = await getTableMap();
 
             // Gộp bàn từ tất cả khu vực (areas) thành 1 mảng phẳng
             const allTablesRaw = dbData.areas.flatMap(area => area.tables);
@@ -42,9 +37,9 @@ const TableMap = () => {
             });
 
             setAllTables(formattedTables);
-            setLoading(false);
         } catch (error) {
             console.error("Lỗi khi tải sơ đồ bàn:", error);
+        } finally {
             setLoading(false);
         }
     };
@@ -58,7 +53,6 @@ const TableMap = () => {
 
     const handleTableClick = (tableId) => {
         console.log("Điều hướng tới menu của bàn:", tableId);
-        // ĐÃ SỬA: Thêm /dashboard/ vào trước đường dẫn
         navigate(`/dashboard/menu/${tableId}`);
     };
 

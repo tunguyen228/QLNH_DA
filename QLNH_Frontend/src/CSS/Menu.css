@@ -1,0 +1,33 @@
+.menu-wrapper {
+    background-color: #F8FAF9;
+    min-height: 100vh;
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+
+.hide-scrollbar {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+}
+
+.food-img-placeholder {
+    height: 180px;
+    background-color: #e9ecef;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #adb5bd;
+}
+
+.btn-category {
+    white-space: nowrap;
+    border-radius: 20px !important;
+}
+
+.btn-category.active-cat {
+    background-color: #114E29 !important;
+    color: white !important;
+    border: none;
+}
