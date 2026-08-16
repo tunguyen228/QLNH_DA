@@ -19,7 +19,6 @@ namespace QLNH_Backend.Controllers
         [HttpGet]
         public async Task<IActionResult> MonAns()
         {
-            // Truy vấn và map thẳng sang DTO
             var monAns = await _context.MonAns
                 .Where(m => m.DangKinhDoanh == true)
                 .Select(m => new MonAnDTO
@@ -29,8 +28,8 @@ namespace QLNH_Backend.Controllers
                     DonVi = m.DonVi,
                     GiaTien = m.GiaTien,
                     HinhAnh = m.HinhAnh,
-                    // Lấy Tên Nhóm từ Navigation property. 
-                    // EF Core tự động xử lý JOIN SQL ở đoạn này.
+                    DangKinhDoanh = m.DangKinhDoanh,
+                    MaNhom = m.MaNhom,
                     TenNhom = m.MaNhomNavigation != null ? m.MaNhomNavigation.TenNhom : "Chưa phân loại"
                 })
                 .ToListAsync();

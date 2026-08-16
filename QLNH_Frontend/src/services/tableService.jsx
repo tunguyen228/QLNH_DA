@@ -10,3 +10,22 @@ export const getTableMap = async () => {
 
     return response.json();
 };
+
+// Lấy danh sách bàn dạng phẳng (dùng cho dropdown chọn bàn ở trang Menu)
+export const fetchAllTables = async () => {
+    try {
+        const dbData = await getTableMap();
+        const allTablesRaw = dbData.areas.flatMap(area => area.tables);
+
+        return allTablesRaw.map(table => ({
+            id: table.id,
+            label: `Bàn ${table.id}`,
+            status: table.status,
+            capacity: table.capacity,
+            floor: table.floor,
+        }));
+    } catch (error) {
+        console.error("Lỗi khi tải danh sách bàn:", error);
+        return [];
+    }
+};
