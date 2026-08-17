@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Card, Button, Spinner } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import '../CSS/TableMap.css';
-import { getTableMap } from '../services/tableService';   // trước: './tableService'
+import { getTableMap } from '../services/tableService';  
 
 const TableMap = () => {
     const [allTables, setAllTables] = useState([]);
@@ -18,11 +18,9 @@ const TableMap = () => {
         try {
             const dbData = await getTableMap();
 
-            // Gộp bàn từ tất cả khu vực (areas) thành 1 mảng phẳng
             const allTablesRaw = dbData.areas.flatMap(area => area.tables);
 
             const formattedTables = allTablesRaw.map(table => {
-                // Backend chỉ có 2 trạng thái: 0 = Empty (Trống), 1 = InUse (Đang phục vụ)
                 const statusText = table.status === 1 ? 'ĐANG PHỤC VỤ' : 'TRỐNG';
 
                 return {
@@ -53,7 +51,7 @@ const TableMap = () => {
 
     const handleTableClick = (tableId) => {
         console.log("Điều hướng tới menu của bàn:", tableId);
-        navigate(`/dashboard/menu/${tableId}`);
+        navigate(`/phuc-vu/menu/${tableId}`);
     };
 
     if (loading) return <div className="text-center mt-5"><Spinner animation="border" /></div>;

@@ -10,7 +10,6 @@ export const fetchCategories = async () => {
 
         const data = await response.json();
 
-        // Tự động chèn danh mục "Tất cả" với MaNhom = 0
         return [{ MaNhom: 0, TenNhom: 'Tất cả' }, ...data];
 
     } catch (error) {
@@ -32,4 +31,19 @@ export const getMenuItems = async () => {
         console.error("Lỗi API getMenuItems:", error);
         return [];
     }
+};
+
+export const sendOrderToKitchen = async (tableId, cartItems) => {
+    // Format lại dữ liệu theo DTO của backend
+    const payload = {
+        tableId: tableId,
+        items: cartItems.map(item => ({
+            monAnId: item.id, // Giả sử item trong cart có thuộc tính id
+            soLuong: item.quantity,
+            ghiChu: item.ghiChu || ""
+        }))
+    };
+
+    const response = await axios.post(`${API_BASE_URL}/Menu/SendOrder`, payload);
+    return response.data;
 };

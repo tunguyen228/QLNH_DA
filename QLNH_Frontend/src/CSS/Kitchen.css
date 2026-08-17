@@ -1,0 +1,31 @@
+:root {
+    --kitchen-dark-green: #0f4c23;
+    --kitchen-orange: #d97051;
+    --kitchen-bg-app: #f5f6f1;
+    --kitchen-border: #e1e8e3;
+    --kitchen-text-main: #2d3436;
+    --kitchen-text-muted: #636e72;
+}
+
+.kitchen-wrapper {
+    background-color: var(--kitchen-bg-app);
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.kitchen-card-panel {
+    background-color: #ffffff;
+    border: 1px solid var(--kitchen-border);
+    border-radius: 8px;
+}
+
+.order-card-pending {
+    background-color: #fdfdfc;
+    border-left: 4px solid var(--kitchen-orange) !important;
+}
+
+.order-card-cooking {
+    background-color: #f8faf9;
+    border-left: 4px solid var(--kitchen-dark-green) !important;
+}

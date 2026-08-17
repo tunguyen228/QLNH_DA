@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using QLNH_Backend.DTO;
 using QLNH_Backend.DAL;
+using QLNH_Backend.BLL;
 using QLNH_Backend.Models; 
 
 namespace QLNH_Backend.Controllers
@@ -11,9 +12,11 @@ namespace QLNH_Backend.Controllers
     public class MenuController : ControllerBase
     {
         private readonly AppDbContext _context;
-        public MenuController(AppDbContext context)
+		private readonly IBepService _bepService;
+        public MenuController(AppDbContext context, IBepService bepService)
         {
             _context = context; 
+			_bepService = bepService;
         }
 
         [HttpGet]
@@ -35,6 +38,28 @@ namespace QLNH_Backend.Controllers
                 .ToListAsync();
 
             return Ok(monAns);
+        }
+
+		[HttpPost("SendOrder")]
+        public async Task<IActionResult> SendOrder([FromBody] SendOrderRequestDTO request)
+        {
+            try
+            {
+                if (request == null || request.Items == null || request.Items.Count == 0)
+                    return BadRequest("Dữ liệu order không hợp lệ.");
+
+                var result = await _bepService.GuiOrderXuongBep(request);
+                
+                if (result)
+                    return Ok(new { message = "Đã gửi order xuống bếp thành công" });
+                    
+                return StatusCode(500, "Lỗi hệ thống khi gửi order.");
+            }
+            catch (System.Exception ex)
+            {
+                // TODO: Log lỗi thực tế
+                return StatusCode(500, ex.Message);
+            }
         }
     }
 }

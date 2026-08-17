@@ -44,6 +44,8 @@ builder.Services.AddAuthentication(options =>
 });
 builder.Services.AddAuthorization();
 
+builder.Services.AddScoped<IBepService, BepService>();
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowReactApp",
@@ -60,9 +62,8 @@ var app = builder.Build();
 app.UseSwagger();
 app.UseSwaggerUI();
 
-app.UseCors("AllowReactApp");
-
 app.UseRouting();
+app.UseCors("AllowReactApp");
 app.UseAuthentication(); 
 app.UseAuthorization();
 app.MapControllers();

@@ -5,7 +5,8 @@ import GiaoDienPhucVu from './pages/GiaoDienPhucVu';
 import TableMap from './pages/TableMap';
 import Menu from './pages/Menu';
 import TheoDoiMon from './pages/TheoDoiMon';
-import SideBar from "./components/SideBar";
+// import SideBar from "./components/SideBar";
+import Kitchen from './pages/Kitchen';
 
 function App() {
     const ProtectedRoute = ({ children }) => {
@@ -21,7 +22,7 @@ function App() {
             <Route path="/" element={<LoginForm />} />
 
             <Route
-                path="/dashboard"
+                path="/phuc-vu"
                 element={
                     <ProtectedRoute>
                         <GiaoDienPhucVu />
@@ -33,6 +34,16 @@ function App() {
                 <Route path="menu" element={<Menu />} />
                 <Route path="theodoi" element={<TheoDoiMon />} />
                 <Route path="menu/:tableId" element={<Menu />} />
+            </Route>
+
+            <Route
+                path="/bep"
+                element={
+                    <ProtectedRoute>
+                        <Kitchen />
+                    </ProtectedRoute>
+                }
+            >
             </Route>
         </Routes>
     );

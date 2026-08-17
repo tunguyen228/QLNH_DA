@@ -32,6 +32,36 @@ const Menu = () => {
     const [tables, setTables] = useState([]);
     const [selectedTable, setSelectedTable] = useState(tableId ? String(tableId) : '');
 
+    // const [cartItems, setCartItems] = useState([]);
+    // const [selectedTableId, setSelectedTableId] = useState(101);
+
+    const handleSendOrder = async () => {
+        // 1. Dùng 'cart' thay vì 'cartItems'
+        if (cart.length === 0) {
+            alert("Giỏ hàng đang trống!");
+            return;
+        }
+
+        // 2. Đảm bảo nhân viên đã chọn bàn trước khi gửi
+        if (!selectedTable) {
+            alert("Vui lòng chọn bàn trước khi order!");
+            return;
+        }
+
+        try {
+            // 3. Truyền đúng 'selectedTable' và mảng 'cart' vào service
+            await sendOrderToKitchen(selectedTable, cart);
+            alert("Đã gửi order xuống bếp thành công!");
+
+            // 4. Xóa giỏ hàng hiển thị sau khi gửi thành công
+            setCart([]);
+
+        } catch (error) {
+            console.error("Lỗi khi gửi order:", error);
+            alert("Không thể gửi order. Vui lòng thử lại!");
+        }
+    };
+    
     useEffect(() => {
         const loadInitialData = async () => {
             const cats = await fetchCategories();
@@ -66,7 +96,7 @@ const Menu = () => {
     const handleTableChange = (e) => {
         const value = e.target.value;
         setSelectedTable(value);
-        navigate(value ? `/dashboard/menu/${value}` : `/dashboard/menu`, { replace: true });
+        navigate(value ? `/phuc-vu/menu/${value}` : `/phuc-vu/menu`, { replace: true });
     };
 
     const formatVND = (price) => {
@@ -320,13 +350,12 @@ const Menu = () => {
                                     <span>Tạm tính</span>
                                     <span>{formatVND(subTotal)}</span>
                                 </div>
-                                <Row className="g-2">
-                                    <Col>
-                                        <Button variant="success" className="w-100 py-2 rounded-3 fw-bold border-0" style={{ backgroundColor: '#114E29' }}>
-                                            Gửi Order
-                                        </Button>
-                                    </Col>
-                                </Row>
+                                <button
+                                    className="btn-submit-order"
+                                    onClick={handleSendOrder}
+                                >
+                                    Gửi Order
+                                </button>
                             </div>
 
                         </Card.Body>

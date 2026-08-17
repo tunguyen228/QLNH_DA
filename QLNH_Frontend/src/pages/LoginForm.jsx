@@ -26,15 +26,17 @@ const LoginForm = () => {
             localStorage.setItem('token', token);
             localStorage.setItem('hoTen', hoTen);
             localStorage.setItem('role', role);
-
+            
             if (role === 'Phục vụ') {
-                navigate('/dashboard');
+                navigate('/phuc-vu');
+            } else if (role=== 'Bếp') {
+                navigate('/bep');
             } else {
-                setError('Tài khoản không có quyền truy cập cổng Phục vụ.');
+                navigate('/');
             }
         } catch (err) {
             console.error("Chi tiết lỗi JS/Network:", err);
-
+            
             if (err.response && err.response.status === 401) {
                 setError('Tài khoản hoặc mật khẩu không chính xác.');
             } else {

@@ -14,7 +14,6 @@ const GiaoDienPhucVu = () => {
 
     return (
         <Container fluid className="p-0" style={{ height: '100vh', display: 'flex' }}>
-            {/* Bọc Sidebar để khoá width, không cho flexbox co bóp nó khi nội dung bên phải quá rộng */}
             <div style={{ flexShrink: 0 }}>
                 <Sidebar hoTen={hoTen} onLogout={handleLogout} />
             </div>
