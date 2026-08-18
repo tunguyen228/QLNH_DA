@@ -45,7 +45,8 @@ namespace QLNH_Backend.BLL
                 Message = "Đăng nhập thành công",
                 Token = tokenHandler.WriteToken(token),
                 HoTen = user.HoTen,   
-                Role = user.VaiTro
+                Role = user.VaiTro,
+                MaNv = user.MaNv
             };
         }
     }

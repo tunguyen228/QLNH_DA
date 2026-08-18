@@ -1,3 +1,4 @@
+import axios from 'axios';
 const API_BASE_URL = 'http://localhost:5000/api';
 
 export const fetchCategories = async () => {
@@ -33,12 +34,12 @@ export const getMenuItems = async () => {
     }
 };
 
-export const sendOrderToKitchen = async (tableId, cartItems) => {
-    // Format lại dữ liệu theo DTO của backend
+export const sendOrderToKitchen = async (tableId, maNv, cartItems) => {
     const payload = {
         tableId: tableId,
+        maNv: maNv,
         items: cartItems.map(item => ({
-            monAnId: item.id, // Giả sử item trong cart có thuộc tính id
+            monAnId: item.id, 
             soLuong: item.quantity,
             ghiChu: item.ghiChu || ""
         }))

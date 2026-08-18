@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
+import { useToast } from '../contexts/ToastProvider';
 import { Row, Col, Card, Button, Form, InputGroup, ListGroup } from 'react-bootstrap';
 import { useParams, useNavigate } from 'react-router-dom';
-import { fetchCategories, getMenuItems } from '../services/menuService';
+import { fetchCategories, getMenuItems, sendOrderToKitchen } from '../services/menuService';
 import { fetchAllTables } from '../services/tableService';
 import '../CSS/Menu.css';
 
@@ -20,45 +21,43 @@ const normalizeMenuItem = (raw) => ({
 });
 
 const Menu = () => {
-    const { tableId } = useParams();
     const navigate = useNavigate();
-
+    const { tableId } = useParams();
+    const { addToast } = useToast();
     const [categories, setCategories] = useState([]);
     const [allMenuItems, setAllMenuItems] = useState([]);
     const [menuItems, setMenuItems] = useState([]);
     const [activeCategory, setActiveCategory] = useState(0);
     const [cart, setCart] = useState([]);
-
     const [tables, setTables] = useState([]);
     const [selectedTable, setSelectedTable] = useState(tableId ? String(tableId) : '');
-
-    // const [cartItems, setCartItems] = useState([]);
-    // const [selectedTableId, setSelectedTableId] = useState(101);
-
+    const [isSubmitting, setIsSubmitting] = useState(false);
     const handleSendOrder = async () => {
-        // 1. Dùng 'cart' thay vì 'cartItems'
         if (cart.length === 0) {
             alert("Giỏ hàng đang trống!");
             return;
         }
-
-        // 2. Đảm bảo nhân viên đã chọn bàn trước khi gửi
         if (!selectedTable) {
-            alert("Vui lòng chọn bàn trước khi order!");
+            alert("Vui lòng chọn bàn trước khi gửi order!");
             return;
         }
-
+        const storedMaNv = localStorage.getItem('maNv');
+        if (!storedMaNv) {
+            alert("Lỗi phiên đăng nhập! Vui lòng đăng nhập lại để tiếp tục.");
+            return; 
+        }
+        const currentMaNv = parseInt(storedMaNv);
+        if (isSubmitting) return;
+        setIsSubmitting(true);
         try {
-            // 3. Truyền đúng 'selectedTable' và mảng 'cart' vào service
-            await sendOrderToKitchen(selectedTable, cart);
-            alert("Đã gửi order xuống bếp thành công!");
-
-            // 4. Xóa giỏ hàng hiển thị sau khi gửi thành công
+            await sendOrderToKitchen(selectedTable, currentMaNv, cart);
+            addToast('Đã gửi order cho bếp thành công!', 'success');
             setCart([]);
-
         } catch (error) {
             console.error("Lỗi khi gửi order:", error);
-            alert("Không thể gửi order. Vui lòng thử lại!");
+            addToast('Lỗi: Không thể gửi xuống bếp!', 'danger');
+        } finally {
+            setIsSubmitting(false);
         }
     };
     

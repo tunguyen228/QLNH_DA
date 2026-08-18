@@ -3,6 +3,7 @@ namespace QLNH_Backend.DTO
     public class SendOrderRequestDTO
     {
         public int TableId { get; set; }
+        public int MaNv { get; set; }
         public List<OrderItemDTO> Items { get; set; }
     }
 

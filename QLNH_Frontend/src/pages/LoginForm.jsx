@@ -21,11 +21,12 @@ const LoginForm = () => {
                 password
             });
 
-            const { token, hoTen, role } = response.data;
+            const { token, hoTen, role, maNv } = response.data;
 
             localStorage.setItem('token', token);
             localStorage.setItem('hoTen', hoTen);
             localStorage.setItem('role', role);
+            localStorage.setItem('maNv', maNv);
             
             if (role === 'Phục vụ') {
                 navigate('/phuc-vu');

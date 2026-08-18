@@ -5,8 +5,8 @@ import GiaoDienPhucVu from './pages/GiaoDienPhucVu';
 import TableMap from './pages/TableMap';
 import Menu from './pages/Menu';
 import TheoDoiMon from './pages/TheoDoiMon';
-// import SideBar from "./components/SideBar";
 import Kitchen from './pages/Kitchen';
+import { ToastProvider } from './contexts/ToastProvider';
 
 function App() {
     const ProtectedRoute = ({ children }) => {
@@ -18,6 +18,7 @@ function App() {
     };
 
     return (
+        <ToastProvider>
         <Routes>
             <Route path="/" element={<LoginForm />} />
 
@@ -46,6 +47,7 @@ function App() {
             >
             </Route>
         </Routes>
+        </ToastProvider>
     );
 }
 

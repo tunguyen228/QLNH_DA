@@ -16,7 +16,32 @@ namespace QLNH_Backend.Controller
             _bepService = bepService;
         }
 
-        // GET: api/bep/mon-cho-che-bien
+        // 1. API mới để phục vụ hàm getPendingOrders và getCookingOrders trong kitchenService.js
+        [HttpGet("orders")]
+        public async Task<IActionResult> GetOrders([FromQuery] string status)
+        {
+            try
+            {
+                if (status == "pending") // Trạng thái chờ nấu
+                {
+                    var pendingOrders = await _bepService.GetDanhSachMonChoCheBienAsync();
+                    return Ok(pendingOrders);
+                }
+                else if (status == "cooking") // Trạng thái đang nấu
+                {
+                    // Tạm thời trả về mảng rỗng (Sau này bạn có thể viết thêm hàm GetDanhSachMonDangNauAsync trong IBepService)
+                    return Ok(new object[] { }); 
+                }
+
+                return BadRequest(new { message = "Trạng thái không hợp lệ." });
+            }
+            catch (System.Exception ex)
+            {
+                return StatusCode(500, new { message = ex.Message });
+            }
+        }
+
+        // 2. API cũ (Giữ lại dự phòng nếu bạn có dùng ở chỗ khác)
         [HttpGet("mon-cho-che-bien")]
         public async Task<IActionResult> GetDanhSachMon()
         {
@@ -24,8 +49,7 @@ namespace QLNH_Backend.Controller
             return Ok(danhSach);
         }
 
-        // PUT: api/bep/cap-nhat-trang-thai/5
-        // Thay đổi route của hàm PUT để nhận 2 tham số {maPhieu}/{maMon}
+        // 3. PUT: api/kitchen/cap-nhat-trang-thai/{maPhieu}/{maMon}
         [HttpPut("cap-nhat-trang-thai/{maPhieu}/{maMon}")]
         public async Task<IActionResult> CapNhatTrangThai(int maPhieu, int maMon, [FromBody] UpdateTrangThaiMonDTO request)
         {
