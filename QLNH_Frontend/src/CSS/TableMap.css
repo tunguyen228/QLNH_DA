@@ -1,23 +1,82 @@
+@import url('https://fonts.googleapis.com/css2?family=Lora:wght@600;700&display=swap'); /* Thêm dòng này nếu chưa có */
+
+.title-lora {
+    font-family: 'Lora', serif;
+}
+
 .table-card {
     border-radius: 12px;
-    min-height: 120px;
+    min-height: 130px;
     cursor: pointer;
-    transition: transform 0.2s;
-    border: none;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    transition: all 0.25s ease;
+    border: none !important;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
+    display: flex;
+    flex-direction: column;
 }
 
 .table-card:hover {
-    transform: translateY(-3px);
+    transform: translateY(-4px);
+    box-shadow: 0 8px 25px rgba(43, 92, 56, 0.15); /* Đổ bóng ngả xanh khi hover */
 }
 
 .status-empty {
     background-color: #ffffff;
-    color: #333333;
-    border: 1px solid #e0e0e0;
+    color: #2c3e50;
 }
 
+.status-empty .table-name {
+    color: #2c3e50;
+}
+
+.status-empty .status-badge {
+    background-color: #f4f4f4;
+    color: #888888;
+    font-size: 0.65rem;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+}
+
+.status-empty .seats-info {
+    color: #666666;
+    font-size: 0.9rem;
+}
+
+/* ----- Trạng thái Đang Phục Vụ (Xanh rêu đậm) ----- */
 .status-in-use {
-    background-color: #2e6b36; 
+    background-color: #2b5c38; /* Màu xanh lá chuẩn theo hình */
     color: #ffffff;
+}
+
+.status-in-use .table-name {
+    color: #ffffff;
+}
+
+.status-in-use .status-badge {
+    background-color: rgba(255, 255, 255, 0.15); /* Nền badge trong suốt nhẹ */
+    color: #ffffff;
+    font-size: 0.65rem;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+}
+
+.status-in-use .seats-info {
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 0.9rem;
+}
+
+.floor-btn {
+    background-color: transparent !important;
+    color: #666666 !important;
+    transition: all 0.2s;
+}
+
+.floor-btn.active {
+    background-color: #2b5c38 !important; /* Xanh rêu */
+    color: #ffffff !important;
+    box-shadow: 0 2px 6px rgba(43, 92, 56, 0.3);
 }

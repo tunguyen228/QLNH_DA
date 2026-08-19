@@ -5,7 +5,7 @@ const KitchenOrderCard = ({ order, status, onActionClick, onReportMissingIngredi
     const isPending = status === 'pending';
 
     return (
-        <Card className={`mb-3 border-0 shadow-sm position-relative ${isPending ? 'order-card-pending' : 'order-card-cooking'}`}>
+        <Card className={`bg-white mb-3 border-0 shadow-sm position-relative ${isPending ? 'order-card-pending' : 'order-card-cooking'}`}>
             <Card.Body className="p-3">
                 <div className="d-flex justify-content-between align-items-start mb-2 pe-2">
                     <div>
@@ -35,8 +35,6 @@ const KitchenOrderCard = ({ order, status, onActionClick, onReportMissingIngredi
                         <i className="bi bi-check2-circle me-2 fs-5"></i> XONG
                     </Button>
                 )}
-
-                {/* Báo thiếu nguyên liệu / báo hết món — chỉ mới thiết kế giao diện, chưa nối API */}
                 <div className="d-flex gap-2 mt-2">
                     <Button
                         variant="outline-warning"

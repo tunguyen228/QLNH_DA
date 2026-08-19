@@ -17,11 +17,7 @@ const GiaoDienPhucVu = () => {
             <div style={{ flexShrink: 0 }}>
                 <Sidebar hoTen={hoTen} onLogout={handleLogout} />
             </div>
-
-            <div
-                className="main-content flex-grow-1 bg-light p-4"
-                style={{ overflowY: 'auto', overflowX: 'hidden', minWidth: 0 }}
-            >
+            <div className="main-content flex-grow-1" style={{ overflowY: 'auto', backgroundColor: '#fcfaf5' }}>
                 <Outlet />
             </div>
         </Container>

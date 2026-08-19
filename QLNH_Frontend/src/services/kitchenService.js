@@ -55,3 +55,19 @@ export const finishCookingOrder = async (maPhieu, maMon) => {
         throw error;
     }
 };
+
+// Thêm vào cuối file kitchenService.js
+export const getKitchenStaff = async () => {
+    try {
+        // TẠM THỜI DÙNG DỮ LIỆU GIẢ: 
+        // Thay đoạn này bằng axios.get('/api/nhanvien/bep') khi bạn đã viết xong API C#
+        return [
+            { id: 1, hoTen: "Trần Văn Hùng", chucVu: "Bếp Trưởng", trangThai: "Đang làm", isOnline: true, avatar: "" },
+            { id: 2, hoTen: "Lê Minh Tuấn", chucVu: "Bếp Phó", trangThai: "Đang làm", isOnline: true, avatar: "" },
+            { id: 3, hoTen: "Nguyễn Thảo Chi", chucVu: "Phụ Bếp", trangThai: "Đang nghỉ", isOnline: false, avatar: "" }
+        ];
+    } catch (error) {
+        console.error("Lỗi khi lấy danh sách nhân viên bếp:", error);
+        return [];
+    }
+};

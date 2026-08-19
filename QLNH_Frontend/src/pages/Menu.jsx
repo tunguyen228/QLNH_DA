@@ -128,7 +128,7 @@ const Menu = () => {
     const subTotal = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
 
     return (
-        <div className="menu-wrapper px-1 pt-2 pb-3 w-100 vh-100 overflow-hidden">
+        <div className="menu-wrapper px-1 pt-2 pb-3 w-100 vh-100 overflow-hidden" style={{ backgroundColor: '#f4f1ea' }}>
             <Row className="h-100 m-0">
                 <Col lg={8} xl={8} className="d-flex flex-column h-100">
                     <div className="d-flex justify-content-between align-items-center mb-4 flex-shrink-0">
@@ -264,7 +264,7 @@ const Menu = () => {
                                     style={{ width: '120px', flexShrink: 0 }}
                                     className="fw-bold"
                                 >
-                                    <option value="">-- Chọn bàn --</option>
+                                    <option value="">Chọn bàn</option>
                                     {tables.map(t => (
                                         <option key={t.id} value={t.id}>{t.label}</option>
                                     ))}
@@ -349,12 +349,25 @@ const Menu = () => {
                                     <span>Tạm tính</span>
                                     <span>{formatVND(subTotal)}</span>
                                 </div>
-                                <button
-                                    className="btn-submit-order"
+                                <Button
+                                    className="btn-submit-order w-100 fw-bold py-3 mt-2 d-flex justify-content-center align-items-center border-0"
                                     onClick={handleSendOrder}
+                                    disabled={isSubmitting || cart.length === 0}
+                                    style={{
+                                        backgroundColor: '#2b5c38', /* Xanh lá rêu */
+                                        color: '#ffffff',
+                                        borderRadius: '12px'
+                                    }}
                                 >
-                                    Gửi Order
-                                </button>
+                                    {isSubmitting ? (
+                                        <>
+                                            <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                                            ĐANG GỬI...
+                                        </>
+                                    ) : (
+                                        'GỬI ORDER'
+                                    )}
+                                </Button>
                             </div>
 
                         </Card.Body>

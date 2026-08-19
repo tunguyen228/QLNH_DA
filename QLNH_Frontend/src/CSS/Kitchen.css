@@ -204,8 +204,6 @@
     border-color: var(--kw-line) !important;
     color: var(--kw-ink) !important;
 }
-
-/* ---------- Focus & motion ---------- */
 .kitchen-wrapper .btn:focus-visible {
     outline: 2px solid var(--kw-forest);
     outline-offset: 2px;

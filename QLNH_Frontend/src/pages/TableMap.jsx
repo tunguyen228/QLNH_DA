@@ -59,63 +59,50 @@ const TableMap = () => {
     const displayedTables = allTables.filter(table => table.tang === currentFloor);
 
     return (
-        <Container fluid className="p-4 min-vh-100" style={{ backgroundColor: '#f4ece1' }}>
+        <Container fluid className="p-4 min-vh-100" style={{ backgroundColor: '#fcfaf5' }}>
             <div className="d-flex justify-content-between align-items-center mb-4">
-                <h2 className="fw-bold" style={{ color: '#2c3e50' }}>Quản lý sơ đồ bàn</h2>
-                <div className="bg-white rounded-pill p-1 shadow-sm border d-flex">
+                <div className="d-flex align-items-center">
+                    <div className="fw-bold fs-4 mb-0" style={{ color: '#2b5c38' }}>
+                        <i className="bi bi-egg-fried me-2"></i>Sơ Đồ Bàn Ăn
+                    </div>
+                </div>
+                <div className="bg-white rounded-pill p-1 shadow-sm d-flex">
                     <Button
-                        variant={currentFloor === 1 ? "success" : "light"}
-                        className={`rounded-pill px-4 fw-bold border-0 ${currentFloor === 1 ? '' : 'text-muted bg-transparent'}`}
-                        style={currentFloor === 1 ? { backgroundColor: '#8aab8a' } : {}}
+                        variant="light"
+                        className={`rounded-pill px-4 fw-bold border-0 floor-btn ${currentFloor === 1 ? 'active' : ''}`}
                         onClick={() => setCurrentFloor(1)}
-                    >
-                        Tầng 1
+                    > Tầng 1
                     </Button>
                     <Button
-                        variant={currentFloor === 2 ? "success" : "light"}
-                        className={`rounded-pill px-4 fw-bold border-0 ${currentFloor === 2 ? '' : 'text-muted bg-transparent'}`}
-                        style={currentFloor === 2 ? { backgroundColor: '#8aab8a' } : {}}
+                        variant="light"
+                        className={`rounded-pill px-4 fw-bold border-0 floor-btn ${currentFloor === 2 ? 'active' : ''}`}
                         onClick={() => setCurrentFloor(2)}
-                    >
-                        Tầng 2
+                    > Tầng 2
                     </Button>
                 </div>
             </div>
 
-            <Row className="g-3">
+            <Row className="g-4">
                 {displayedTables.length > 0 ? (
                     displayedTables.map(table => (
                         <Col xs={12} md={table.colSpan} key={table.id}>
                             <Card
-                                className={`table-card ${getStatusClass(table.status)} border-0 h-100`}
+                                className={`table-card ${getStatusClass(table.status)} h-100 p-3`}
                                 onClick={() => handleTableClick(table.id)}
-                                style={{ borderRadius: '16px', minHeight: '140px', cursor: 'pointer' }}
                             >
-                                <div
-                                    className="position-absolute top-0 end-0 m-3 px-2 py-1 rounded-pill d-flex align-items-center"
-                                    style={{
-                                        backgroundColor: 'rgba(255,255,255,0.3)',
-                                        fontSize: '0.85rem',
-                                        fontWeight: 'bold',
-                                        color: table.status === 0 ? '#666' : '#fff'
-                                    }}
-                                >
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" className="bi bi-people-fill me-1" viewBox="0 0 16 16">
-                                        <path d="M7 14s-1 0-1-1 1-4 5-4 5 3 5 4-1 1-1 1H7Zm4-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6Zm-5.784 6A2.238 2.238 0 0 1 5 13c0-1.355.68-2.75 1.936-3.72A6.325 6.325 0 0 0 5 9c-4 0-5 3-5 4s1 1 1 1h4.216ZM4.5 8a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z"/>
-                                    </svg>
-                                    {table.seats}
-                                </div>
-
-                                <div className="d-flex flex-column justify-content-center align-items-center h-100 p-3">
-                                    <h3 className={`fw-bold mb-2 ${table.status === 0 ? 'text-success' : 'text-white'}`}>
-                                        {table.name}
+                                <div className="d-flex justify-content-between align-items-start mb-4">
+                                    <h3 className="fw-bold mb-0 table-name">
+                                        {table.name.replace('Bàn ', ' ')} 
                                     </h3>
-                                    <span
-                                        className="fw-bold opacity-75"
-                                        style={{ fontSize: '0.85rem', letterSpacing: '1px' }}
-                                    >
+                                    <span className="status-badge text-uppercase">
                                         {table.statusText}
                                     </span>
+                                </div>
+                                <div className="mt-auto d-flex align-items-center seats-info fw-semibold">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-people-fill me-2" viewBox="0 0 16 16">
+                                        <path d="M7 14s-1 0-1-1 1-4 5-4 5 3 5 4-1 1-1 1H7Zm4-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6Zm-5.784 6A2.238 2.238 0 0 1 5 13c0-1.355.68-2.75 1.936-3.72A6.325 6.325 0 0 0 5 9c-4 0-5 3-5 4s1 1 1 1h4.216ZM4.5 8a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z"/>
+                                    </svg>
+                                    <span>{table.seats < 10 ? `0${table.seats}` : table.seats} Khách</span>
                                 </div>
                             </Card>
                         </Col>
