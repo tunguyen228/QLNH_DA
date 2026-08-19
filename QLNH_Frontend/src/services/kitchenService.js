@@ -8,7 +8,7 @@ export const getPendingOrders = async () => {
         return response.data;
     } catch (error) {
         console.error("Lỗi khi lấy danh sách chờ nấu:", error);
-        return []; 
+        return [];
     }
 };
 
@@ -22,22 +22,36 @@ export const getCookingOrders = async () => {
     }
 };
 
-export const startCookingOrder = async (orderId) => {
+export const updateOrderStatus = async (maPhieu, maMon, TrangThai) => {
     try {
-        const response = await axios.put(`${API_BASE_URL}/orders/${orderId}/start`);
+        const response = await axios.put(`${API_BASE_URL}/CapNhatTrangThai`, {
+            phieuGoiId: maPhieu,
+            monAnId: maMon,
+            trangThai: TrangThai
+        });
         return response.data;
     } catch (error) {
-        console.error(`Lỗi khi bắt đầu nấu món ID ${orderId}:`, error);
-        throw error; 
+        console.error(`Lỗi khi cập nhật trạng thái món (Phiếu: ${maPhieu}, Món: ${maMon}):`, error);
+        throw error;
     }
 };
 
-export const finishCookingOrder = async (orderId) => {
+export const startCookingOrder = async (maPhieu, maMon) => {
     try {
-        const response = await axios.put(`${API_BASE_URL}/orders/${orderId}/finish`);
+        const response = await axios.put(`${API_BASE_URL}/orders/${maPhieu}/${maMon}/start`);
         return response.data;
     } catch (error) {
-        console.error(`Lỗi khi hoàn thành món ID ${orderId}:`, error);
+        console.error(`Lỗi khi bắt đầu nấu món (Phiếu: ${maPhieu}, Món: ${maMon}):`, error);
+        throw error;
+    }
+};
+
+export const finishCookingOrder = async (maPhieu, maMon) => {
+    try {
+        const response = await axios.put(`${API_BASE_URL}/orders/${maPhieu}/${maMon}/finish`);
+        return response.data;
+    } catch (error) {
+        console.error(`Lỗi khi hoàn thành món (Phiếu: ${maPhieu}, Món: ${maMon}):`, error);
         throw error;
     }
 };

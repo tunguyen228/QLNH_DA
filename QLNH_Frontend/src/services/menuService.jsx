@@ -40,7 +40,7 @@ export const sendOrderToKitchen = async (tableId, maNv, cartItems) => {
         maNv: maNv,
         items: cartItems.map(item => ({
             monAnId: item.id, 
-            soLuong: item.quantity,
+            soLuong: item.qty,
             ghiChu: item.ghiChu || ""
         }))
     };
