@@ -20,7 +20,6 @@ namespace QLNH_Backend.BLL
 
         public async Task<bool> GuiOrderXuongBep(SendOrderRequestDTO request)
         {
-            // 1. Tìm phiếu gọi gần nhất của bàn này
             var phieuGoi = await _context.PhieuGois
                 .Where(p => p.MaBan == request.TableId)
                 .OrderByDescending(p => p.MaPhieu)
@@ -36,24 +35,19 @@ namespace QLNH_Backend.BLL
                 _context.PhieuGois.Add(phieuGoi);
                 await _context.SaveChangesAsync(); 
             }
-
-            // 2. Lấy toàn bộ chi tiết món ăn ĐÃ CÓ trong phiếu gọi này lên trước (để tối ưu DB)
+            
             var chiTietDaCoList = await _context.ChiTietPhieuGois
                 .Where(ct => ct.MaPhieu == phieuGoi.MaPhieu)
                 .ToListAsync();
 
-            // 3. Duyệt qua từng món khách vừa order
             foreach (var item in request.Items)
             {
-                // Tìm xem món này đã có trong phiếu chưa
                 var chiTietDaCo = chiTietDaCoList.FirstOrDefault(ct => ct.MaMon == item.MonAnId);
 
                 if (chiTietDaCo != null)
                 {
-                    // NẾU ĐÃ CÓ: Cộng dồn số lượng
                     chiTietDaCo.SoLuong += item.SoLuong;
                     
-                    // Nối thêm ghi chú (nếu có)
                     if (!string.IsNullOrWhiteSpace(item.GhiChu))
                     {
                         chiTietDaCo.GhiChu = string.IsNullOrWhiteSpace(chiTietDaCo.GhiChu) 
@@ -61,12 +55,10 @@ namespace QLNH_Backend.BLL
                             : chiTietDaCo.GhiChu + " | " + item.GhiChu;
                     }
 
-                    // Đổi lại trạng thái thành chờ chế biến để báo cho bếp biết có thêm đồ
                     chiTietDaCo.TrangThai = "ChoCheBien"; 
                 }
                 else
                 {
-                    // NẾU CHƯA CÓ: Thêm mới hoàn toàn
                     var chiTietMoi = new ChiTietPhieuGoi
                     {
                         MaPhieu = phieuGoi.MaPhieu, 
@@ -76,13 +68,9 @@ namespace QLNH_Backend.BLL
                         TrangThai = "ChoCheBien" 
                     };
                     _context.ChiTietPhieuGois.Add(chiTietMoi);
-                    
-                    // Thêm vào list local để đề phòng trong cùng 1 request gửi lên có 2 món trùng ID
                     chiTietDaCoList.Add(chiTietMoi);
                 }
             }
-
-            // 4. Lưu tất cả thay đổi xuống Database
             await _context.SaveChangesAsync();
             return true;
         }
@@ -96,13 +84,33 @@ namespace QLNH_Backend.BLL
                     MaPhieu = c.MaPhieu,
                     MaMon = c.MaMon,
                     SoLuong = c.SoLuong,
-                    GhiChu = c.GhiChu
+                    GhiChu = c.GhiChu,
+                    TenMon = _context.MonAns.FirstOrDefault(m => m.MaMon == c.MaMon).TenMon,
+                    TenBan = _context.PhieuGois.FirstOrDefault(p => p.MaPhieu == c.MaPhieu).MaBan.ToString()
                 })
                 .ToListAsync();
 
             return danhSach;
         }
 
+        public async Task<IEnumerable<MonChoCheBienDTO>> GetDanhSachMonDangCheBienAsync()
+        {
+            var danhSach = await _context.ChiTietPhieuGois
+                .Where(c => c.TrangThai == "DangCheBien") 
+                .Select(c => new MonChoCheBienDTO
+                {
+                    MaPhieu = c.MaPhieu,
+                    MaMon = c.MaMon,
+                    SoLuong = c.SoLuong,
+                    GhiChu = c.GhiChu,
+                    TenMon = _context.MonAns.FirstOrDefault(m => m.MaMon == c.MaMon).TenMon,
+                    TenBan = _context.PhieuGois.FirstOrDefault(p => p.MaPhieu == c.MaPhieu).MaBan.ToString()
+                })
+                .ToListAsync();
+
+            return danhSach;
+        }
+        
         public async Task<bool> CapNhatTrangThaiMonAsync(int phieuGoiId, int monAnId, string trangThaiMoi)
         {
             var chiTiet = await _context.ChiTietPhieuGois

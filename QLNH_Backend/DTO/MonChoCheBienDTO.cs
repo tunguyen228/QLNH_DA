@@ -4,13 +4,13 @@ namespace QLNH_Backend.DTO
 {
     public class MonChoCheBienDTO
     {
-        public int MaPhieu { get; set; }  // Đổi từ IdChiTietPhieuGoi/IdPhieuGoi
-        public int MaMon { get; set; }    // Đổi để chứa mã món ăn
+        public int MaPhieu { get; set; }  
+        public int MaMon { get; set; }    
         public string TenBan { get; set; }
         public string TenMon { get; set; }
         public int SoLuong { get; set; }
         public string? GhiChu { get; set; }
-        public DateTime? ThoiGianGoi { get; set; } // Map với ThoiGianTao
+        public DateTime? ThoiGianGoi { get; set; } 
         public string? TrangThai { get; set; } 
     }
     

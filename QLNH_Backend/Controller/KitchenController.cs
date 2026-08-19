@@ -16,21 +16,20 @@ namespace QLNH_Backend.Controller
             _bepService = bepService;
         }
 
-        // 1. API mới để phục vụ hàm getPendingOrders và getCookingOrders trong kitchenService.js
         [HttpGet("orders")]
         public async Task<IActionResult> GetOrders([FromQuery] string status)
         {
             try
             {
-                if (status == "pending") // Trạng thái chờ nấu
+                if (status == "pending") 
                 {
                     var pendingOrders = await _bepService.GetDanhSachMonChoCheBienAsync();
                     return Ok(pendingOrders);
                 }
-                else if (status == "cooking") // Trạng thái đang nấu
+                else if (status == "cooking") 
                 {
-                    // Tạm thời trả về mảng rỗng (Sau này bạn có thể viết thêm hàm GetDanhSachMonDangNauAsync trong IBepService)
-                    return Ok(new object[] { }); 
+                    var cookingOrders = await _bepService.GetDanhSachMonDangCheBienAsync();
+                    return Ok(cookingOrders);
                 }
 
                 return BadRequest(new { message = "Trạng thái không hợp lệ." });
@@ -41,7 +40,6 @@ namespace QLNH_Backend.Controller
             }
         }
 
-        // 2. API cũ (Giữ lại dự phòng nếu bạn có dùng ở chỗ khác)
         [HttpGet("mon-cho-che-bien")]
         public async Task<IActionResult> GetDanhSachMon()
         {
@@ -49,24 +47,21 @@ namespace QLNH_Backend.Controller
             return Ok(danhSach);
         }
 
-        // 3. PUT: api/kitchen/cap-nhat-trang-thai/{maPhieu}/{maMon}
-        [HttpPut("cap-nhat-trang-thai/{maPhieu}/{maMon}")]
-        public async Task<IActionResult> CapNhatTrangThai(int maPhieu, int maMon, [FromBody] UpdateTrangThaiMonDTO request)
+        [HttpPut("CapNhatTrangThai")]
+        public async Task<IActionResult> CapNhatTrangThaiMon([FromBody] UpdateStatusRequest request)
         {
-            if (string.IsNullOrEmpty(request.TrangThaiMoi))
+            var result = await _bepService.CapNhatTrangThaiMonAsync(request.PhieuGoiId, request.MonAnId, request.TrangThai);
+            if (result)
             {
-                return BadRequest(new { message = "Trạng thái không được để trống." });
+                return Ok(new { message = "Cập nhật thành công!" });
             }
-
-            // Truyền 2 tham số vào hàm Update
-            var result = await _bepService.CapNhatTrangThaiMonAsync(maPhieu, maMon, request.TrangThaiMoi);
-
-            if (!result)
-            {
-                return NotFound(new { message = "Không tìm thấy món ăn này trong phiếu gọi." });
-            }
-
-            return Ok(new { message = "Cập nhật trạng thái thành công." });
+            return BadRequest("Không tìm thấy món ăn trong phiếu này.");
+        }
+        public class UpdateStatusRequest
+        {
+            public int PhieuGoiId { get; set; }
+            public int MonAnId { get; set; }
+            public string TrangThai { get; set; }
         }
     }
 }
