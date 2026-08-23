@@ -19,7 +19,9 @@ namespace QLNH_Backend.Controllers
         [HttpGet("map")]
         public async Task<ActionResult<TableMapResponse>> GetTableMap()
         {
-            var banAnsFromDb = await _context.BanAns.ToListAsync();
+            var banAnsFromDb = await _context.BanAns
+                .OrderBy(b => b.MaBan)
+                .ToListAsync();
 
             var response = new TableMapResponse();
             response.Areas = new List<AreaDTO>();

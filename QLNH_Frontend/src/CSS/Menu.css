@@ -1,6 +1,6 @@
 .menu-wrapper {
-    background-color: #F8FAF9;
     min-height: 100vh;
+    background-color: #fcfaf5;
 }
 
 .hide-scrollbar::-webkit-scrollbar {

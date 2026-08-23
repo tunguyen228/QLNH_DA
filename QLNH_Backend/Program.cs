@@ -7,6 +7,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using QLNH_Backend.DAL;
 using QLNH_Backend.BLL;
+using QLNH_Backend.Hubs; // ---> THÊM DÒNG NÀY ĐỂ NHẬN DIỆN HUB
 
 var builder = WebApplication.CreateBuilder(args);
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
@@ -46,6 +47,9 @@ builder.Services.AddAuthorization();
 
 builder.Services.AddScoped<IBepService, BepService>();
 
+// ---> THÊM DÒNG NÀY ĐỂ ĐĂNG KÝ SIGNALR VÀO SERVICE TỔNG
+builder.Services.AddSignalR(); 
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowReactApp",
@@ -53,7 +57,8 @@ builder.Services.AddCors(options =>
         {
             policy.WithOrigins("http://localhost:5173")
                   .AllowAnyHeader()
-                  .AllowAnyMethod();
+                  .AllowAnyMethod()
+                  .AllowCredentials(); // ---> BẮT BUỘC PHẢI CÓ DÒNG NÀY CHO SIGNALR KHI DÙNG CORS
         });
 });
 
@@ -67,5 +72,8 @@ app.UseCors("AllowReactApp");
 app.UseAuthentication(); 
 app.UseAuthorization();
 app.MapControllers();
+
+// ---> THÊM DÒNG NÀY ĐỂ MỞ ENDPOINT CHO FE KẾT NỐI HUB
+app.MapHub<NotificationHub>("/notificationHub"); 
 
 app.Run();

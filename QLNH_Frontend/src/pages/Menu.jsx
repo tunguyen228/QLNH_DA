@@ -128,7 +128,7 @@ const Menu = () => {
     const subTotal = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
 
     return (
-        <div className="menu-wrapper px-1 pt-2 pb-3 w-100 vh-100 overflow-hidden" style={{ backgroundColor: '#f4f1ea' }}>
+        <div className="menu-wrapper px-1 pt-2 pb-3 w-100 vh-100 overflow-hidden">
             <Row className="h-100 m-0">
                 <Col lg={8} xl={8} className="d-flex flex-column h-100">
                     <div className="d-flex justify-content-between align-items-center mb-4 flex-shrink-0">
