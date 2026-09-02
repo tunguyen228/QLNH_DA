@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using QLNH_Backend.DAL;
@@ -11,9 +12,11 @@ using QLNH_Backend.DAL;
 namespace QLNH.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260831224151_UpdateThanhToan")]
+    partial class UpdateThanhToan
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -226,7 +229,7 @@ namespace QLNH.Migrations
                     b.Property<decimal>("GiamGia")
                         .HasColumnType("numeric");
 
-                    b.Property<int?>("MaKh")
+                    b.Property<int>("MaKh")
                         .HasColumnType("integer");
 
                     b.Property<int>("MaNv")
@@ -756,7 +759,8 @@ namespace QLNH.Migrations
                     b.HasOne("QLNH_Backend.Models.KhachHang", "MaKhNavigation")
                         .WithMany("HoaDons")
                         .HasForeignKey("MaKh")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .IsRequired();
 
                     b.HasOne("QLNH_Backend.Models.NhanVien", "MaNvNavigation")
                         .WithMany("HoaDons")

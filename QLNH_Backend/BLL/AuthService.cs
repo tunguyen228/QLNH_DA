@@ -22,7 +22,15 @@ namespace QLNH_Backend.BLL
         {
             var user = _userDal.GetUserByCredentials(request.Username, request.Password);
             
-            if (user == null) return null; 
+            // ĐÃ SỬA: Thay vì return null, hãy trả về DTO với IsSuccess = false
+            if (user == null) 
+            {
+                return new LoginResponseDTO
+                {
+                    IsSuccess = false,
+                    Message = "Tên đăng nhập hoặc mật khẩu không chính xác."
+                };
+            }
             
             var tokenHandler = new JwtSecurityTokenHandler();
             var key = Encoding.ASCII.GetBytes(_secretKey);

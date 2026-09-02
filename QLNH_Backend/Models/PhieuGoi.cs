@@ -10,6 +10,7 @@ public class PhieuGoi
     public int MaNv { get; set; }
     public int? MaHoaDon { get; set; }
     public DateTime? ThoiGianTao { get; set; }
+    public string TrangThai { get; set; }
 
     public virtual ICollection<ChiTietPhieuGoi> ChiTietPhieuGois { get; set; } = new List<ChiTietPhieuGoi>();
     public virtual HoaDon? MaHoaDonNavigation { get; set; }

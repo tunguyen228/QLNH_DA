@@ -1,6 +1,7 @@
 import React from 'react';
 import { Nav } from 'react-bootstrap';
 import SidebarNavItem from './SidebarNavItem';
+import { useNotifications } from '../contexts/NotificationProvider';
 
 const NAV_ITEMS = [
     {
@@ -21,14 +22,16 @@ const NAV_ITEMS = [
 ];
 
 const Sidebar = ({ hoTen, onLogout }) => {
+    const { unreadCount } = useNotifications();
+
     return (
         <div
             className="d-flex flex-column"
             style={{
                 width: '260px',
                 height: '100%',
-                backgroundColor: '#f4f1ea', 
-                borderRight: '1px solid #e2dcd0' 
+                backgroundColor: '#f4f1ea',
+                borderRight: '1px solid #e2dcd0'
             }}
         >
             <div className="p-4 mb-2 text-center">
@@ -41,7 +44,13 @@ const Sidebar = ({ hoTen, onLogout }) => {
             </div>
             <Nav className="flex-column flex-grow-1 p-3" variant="pills">
                 {NAV_ITEMS.map(item => (
-                    <SidebarNavItem key={item.to} to={item.to} icon={item.icon} label={item.label} />
+                    <SidebarNavItem
+                        key={item.to}
+                        to={item.to}
+                        icon={item.icon}
+                        label={item.label}
+                        showDot={item.to === 'theodoi' && unreadCount > 0}
+                    />
                 ))}
             </Nav>
             <div className="p-4">

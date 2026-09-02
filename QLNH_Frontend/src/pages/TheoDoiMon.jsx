@@ -2,11 +2,18 @@ import React, { useState, useEffect } from 'react';
 import { HubConnectionBuilder } from '@microsoft/signalr';
 import axios from 'axios';
 import { FaRegClock, FaCheckCircle, FaFire } from 'react-icons/fa';
+import { useNotifications } from '../contexts/NotificationProvider';
 import '../CSS/TheoDoiMon.css';
 
 const TheoDoiMon = () => {
     const [orders, setOrders] = useState([]);
     const [currentTime, setCurrentTime] = useState(new Date());
+    const { markAllAsRead } = useNotifications();
+
+    // Vào tab này thì coi như đã xem hết thông báo -> tắt chấm đỏ trên Sidebar
+    useEffect(() => {
+        markAllAsRead();
+    }, [markAllAsRead]);
 
     useEffect(() => {
         const timer = setInterval(() => setCurrentTime(new Date()), 60000);

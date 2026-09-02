@@ -7,6 +7,7 @@ public class KhachHang
 {
     public int? MaKh { get; set; }
     public string? TenKhachHang { get; set; }
+    public string SoDienThoai { get; set; }
     public int DiemTichLuy { get; set; }
 
     public virtual ICollection<HoaDon> HoaDons { get; set; } = new List<HoaDon>(); 

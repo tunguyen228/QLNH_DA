@@ -32,6 +32,8 @@ const LoginForm = () => {
                 navigate('/phuc-vu');
             } else if (role=== 'Bếp') {
                 navigate('/bep');
+            } else if(role === 'Thu ngân') {
+                navigate('/thu-ngan');
             } else {
                 navigate('/');
             }

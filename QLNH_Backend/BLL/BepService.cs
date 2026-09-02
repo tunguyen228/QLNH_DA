@@ -16,6 +16,9 @@ namespace QLNH_Backend.BLL
         private readonly AppDbContext _context;
         private readonly IHubContext<NotificationHub> _hubContext;
 
+        // Các trạng thái được coi là "đã chế biến xong"
+        private static readonly string[] DoneStatuses = { "DaXong", "HoanThanh" };
+
         public BepService(AppDbContext context, IHubContext<NotificationHub> hubContext)
         {
             _context = context;
@@ -27,19 +30,15 @@ namespace QLNH_Backend.BLL
             using var transaction = await _context.Database.BeginTransactionAsync();
             try
             {
-                // Luôn tạo phiếu gọi MỚI cho mỗi lần bấm "Gửi order",
-                // KHÔNG tìm và tái sử dụng phiếu gọi cũ của bàn nữa.
-                // => 1 bàn gọi nhiều lần sẽ có nhiều PhieuGoi riêng biệt.
                 var phieuGoi = new PhieuGoi
                 {
                     MaBan = request.TableId,
                     MaNv = request.MaNv,
+                    TrangThai = "ChoCheBien" // FIX: was missing, caused NOT NULL violation on insert
                 };
                 _context.PhieuGois.Add(phieuGoi);
-                await _context.SaveChangesAsync(); // Lưu để sinh MaPhieu (khóa chính tự tăng) trước khi tạo ChiTietPhieuGoi
+                await _context.SaveChangesAsync();
 
-                // Gộp món trùng nhau TRONG CÙNG 1 request (phòng trường hợp payload có 2 dòng cùng món),
-                // không còn liên quan gì tới các phiếu gọi cũ nữa.
                 var chiTietMoiList = new List<ChiTietPhieuGoi>();
 
                 foreach (var item in request.Items)
@@ -72,7 +71,6 @@ namespace QLNH_Backend.BLL
                     }
                 }
 
-                // Cập nhật trạng thái bàn sang "Đang sử dụng" khi có phiếu gọi (chỉ set nếu chưa ở trạng thái đó).
                 var ban = await _context.BanAns.FirstOrDefaultAsync(b => b.MaBan == request.TableId);
                 if (ban != null && ban.TrangThai != "Đang sử dụng" && ban.TrangThai != "Có khách")
                 {
@@ -140,13 +138,26 @@ namespace QLNH_Backend.BLL
             chiTiet.TrangThai = trangThaiMoi;
             await _context.SaveChangesAsync();
 
-            if (trangThaiMoi == "DaXong")
+            // Sửa: nhận cả "DaXong" lẫn "HoanThanh" (tên thật bếp đang gửi), thay vì chỉ check "DaXong"
+            if (DoneStatuses.Contains(trangThaiMoi))
             {
+                var tenMon = await _context.MonAns
+                    .Where(m => m.MaMon == monAnId)
+                    .Select(m => m.TenMon)
+                    .FirstOrDefaultAsync();
+
+                var maBan = await _context.PhieuGois
+                    .Where(p => p.MaPhieu == phieuGoiId)
+                    .Select(p => p.MaBan)
+                    .FirstOrDefaultAsync();
+
                 await _hubContext.Clients.All.SendAsync("DishStatusUpdated", new
                 {
                     MaPhieu = phieuGoiId,
                     MaMon = monAnId,
-                    TrangThai = trangThaiMoi
+                    TrangThai = trangThaiMoi,
+                    TenMon = tenMon,
+                    MaBan = maBan
                 });
             }
 

@@ -2,7 +2,7 @@ import React from 'react';
 import { Nav } from 'react-bootstrap';
 import { Link, useLocation } from 'react-router-dom';
 
-const SidebarNavItem = ({ to, icon, label }) => {
+const SidebarNavItem = ({ to, icon, label, showDot = false }) => {
     const location = useLocation();
     const isActive = location.pathname.includes(to);
 
@@ -16,11 +16,26 @@ const SidebarNavItem = ({ to, icon, label }) => {
                 color: isActive ? '#ffffff' : '#5c5c5c',
                 transition: 'all 0.2s ease-in-out',
                 gap: '14px',
-                fontSize: '0.95rem'
+                fontSize: '0.95rem',
+                position: 'relative'
             }}
         >
-            <span className="d-flex align-items-center justify-content-center" style={{ width: '22px' }}>
+            <span className="d-flex align-items-center justify-content-center" style={{ width: '22px', position: 'relative' }}>
                 {icon}
+                {showDot && (
+                    <span
+                        style={{
+                            position: 'absolute',
+                            top: '-2px',
+                            right: '-2px',
+                            width: '9px',
+                            height: '9px',
+                            backgroundColor: '#dc3545',
+                            borderRadius: '50%',
+                            border: '2px solid #f4f1ea'
+                        }}
+                    />
+                )}
             </span>
             {label}
         </Nav.Link>

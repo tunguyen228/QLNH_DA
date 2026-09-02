@@ -66,5 +66,19 @@ namespace QLNH_Backend.Controllers
 
             return Ok(response);
         }
+        [HttpGet("active")]
+        public async Task<IActionResult> GetActiveTables()
+        {
+            var tables = await _context.BanAns
+                .Where(b => b.TrangThai == "Đang sử dụng") // Kiểm tra kỹ string trạng thái này trong DB
+                .Select(b => new 
+                {
+                    id = b.MaBan,      
+                    name = "Bàn " + b.MaBan   
+                })
+                .ToListAsync();
+
+            return Ok(tables);
+        }
     }
 }
