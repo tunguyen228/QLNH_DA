@@ -124,5 +124,19 @@ namespace QLNH_Backend.BLL
                 };
             }
         }
+        public async Task<object> GetCashierByIdAsync(int id)
+        {
+            // Truy vấn vào bảng NhanVien dựa theo model của bạn
+            var cashier = await _context.NhanViens
+                .Where(nv => nv.MaNv == id && nv.TrangThaiHoatDong == "Làm việc")
+                .Select(nv => new 
+                {
+                    HoTen = nv.HoTen,
+                    VaiTro = nv.VaiTro
+                })
+                .FirstOrDefaultAsync();
+
+            return cashier;
+        }
     }
 }

@@ -163,5 +163,30 @@ namespace QLNH_Backend.BLL
 
             return true;
         }
+        public async Task<IEnumerable<NhanVienBepDTO>> GetKitchenStaffAsync()
+        {
+            // LƯU Ý: Đảm bảo '_context.NhanViens' là đúng tên DbSet trong DbContext của bạn.
+            // Nếu trong DbContext bạn đặt tên khác (ví dụ: _context.NhanVien) thì đổi lại cho khớp.
+    
+            var staffList = await _context.NhanViens
+                // Lọc theo VaiTro là "Bếp" (có thể đổi thành "Đầu bếp" hoặc "Nhân viên bếp" tuỳ data thật của bạn)
+                // và TrangThaiHoatDong là "Làm việc"
+                .Where(nv => nv.VaiTro.Contains("Bếp") && nv.TrangThaiHoatDong == "Làm việc") 
+                .Select(nv => new NhanVienBepDTO
+                {
+                    Id = nv.MaNv,                       // Map MaNv -> Id
+                    HoTen = nv.HoTen,                   // Map HoTen -> HoTen
+                    ChucVu = nv.VaiTro,                 // Map VaiTro -> ChucVu
+                    TrangThai = nv.TrangThaiHoatDong,   // Map TrangThaiHoatDong -> TrangThai
+                    Avatar = nv.Avatar ?? "",           // Nếu Avatar null thì gán chuỗi rỗng để frontend không bị lỗi
+            
+                    // Vì bảng NhanVien của bạn không có cột lưu trạng thái đang online hay offline
+                    // Nên tạm thời set mặc định là true (để frontend hiện chấm xanh)
+                    IsOnline = true                     
+                })
+                .ToListAsync();
+
+            return staffList;
+        }
     }
 }

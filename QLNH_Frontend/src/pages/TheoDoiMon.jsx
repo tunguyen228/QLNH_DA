@@ -16,7 +16,13 @@ const TheoDoiMon = () => {
     }, [markAllAsRead]);
 
     useEffect(() => {
-        const timer = setInterval(() => setCurrentTime(new Date()), 60000);
+        const timer = setInterval(() => {
+            const now = new Date();
+            setCurrentTime(now);
+            if (now.getHours() === 0 && now.getMinutes() === 0) {
+                fetchOrders();
+            }
+        }, 60000);
         return () => clearInterval(timer);
     }, []);
 

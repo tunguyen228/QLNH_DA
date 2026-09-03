@@ -1,4 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
+using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
@@ -20,40 +22,64 @@ namespace QLNH_Backend.Controllers
             _context = context;
         }
 
-        // Endpoint mới trả về danh sách cho màn hình phục vụ
         [HttpGet("danhsach")]
         public async Task<IActionResult> GetDanhSachOrder()
         {
+            // FIX: DateTime.Today có Kind = Local -> Npgsql ném lỗi khi cột
+            // ThoiGianTao là timestamptz. Phải ép về UTC như đã làm bên HoaDon.cs.
+            var today = DateTime.SpecifyKind(DateTime.UtcNow.Date, DateTimeKind.Utc);
+
             var orders = await _context.PhieuGois
-                .OrderByDescending(p => p.MaPhieu) // Phiếu mới nhất (MaPhieu lớn nhất) lên đầu
-                .Select(p => new 
-                {
-                    maPhieu = p.MaPhieu,
-                    tenBan = p.MaBan.ToString(),
-                    thoiGianTao = p.ThoiGianTao, 
-                    chiTiet = _context.ChiTietPhieuGois
-                        .Where(ct => ct.MaPhieu == p.MaPhieu)
-                        .Select(ct => new 
+                .Where(p => p.ThoiGianTao >= today || p.TrangThai != "Đã thanh toán")
+                .OrderByDescending(p => p.MaPhieu)
+                .ToListAsync();
+
+            if (!orders.Any())
+            {
+                return Ok(new List<object>());
+            }
+
+            var orderIds = orders.Select(o => o.MaPhieu).ToList();
+
+            var chiTiets = await _context.ChiTietPhieuGois
+                .Where(ct => orderIds.Contains(ct.MaPhieu))
+                .ToListAsync();
+
+            var monAnIds = chiTiets.Select(ct => ct.MaMon).Distinct().ToList();
+
+            var monAns = await _context.MonAns
+                .Where(m => monAnIds.Contains(m.MaMon))
+                .ToListAsync();
+
+            var result = orders.Select(p =>
+            {
+                var chiTietPhieu = chiTiets
+                    .Where(ct => ct.MaPhieu == p.MaPhieu)
+                    .Select(ct =>
+                    {
+                        var mon = monAns.FirstOrDefault(m => m.MaMon == ct.MaMon);
+                        return new
                         {
                             maMon = ct.MaMon,
-                            tenMon = _context.MonAns.FirstOrDefault(m => m.MaMon == ct.MaMon).TenMon,
+                            tenMon = mon != null ? mon.TenMon : "Món không xác định",
                             soLuong = ct.SoLuong,
                             trangThai = ct.TrangThai,
                             ghiChu = ct.GhiChu,
-                            gia = _context.MonAns.FirstOrDefault(m => m.MaMon == ct.MaMon).GiaTien 
-                        }).ToList()
-                })
-                .Where(p => p.chiTiet.Any())
-                .ToListAsync();
+                            gia = mon != null ? mon.GiaTien : 0
+                        };
+                    }).ToList();
 
-            var result = orders.Select(o => new 
-            {
-                o.maPhieu,
-                o.tenBan,
-                o.thoiGianTao,
-                tongTien = o.chiTiet.Sum(c => c.soLuong * c.gia),
-                o.chiTiet
-            });
+                return new
+                {
+                    maPhieu = p.MaPhieu,
+                    tenBan = p.MaBan.ToString(),
+                    thoiGianTao = p.ThoiGianTao,
+                    tongTien = chiTietPhieu.Sum(c => c.soLuong * c.gia),
+                    chiTiet = chiTietPhieu
+                };
+            })
+            .Where(o => o.chiTiet.Any())
+            .ToList();
 
             return Ok(result);
         }
@@ -63,34 +89,27 @@ namespace QLNH_Backend.Controllers
         {
             var result = await _bepService.CapNhatTrangThaiMonAsync(phieuGoiId, monAnId, "DaPhucVu");
             if (result) return Ok(new { message = "Đã phục vụ món thành công" });
-            
+
             return BadRequest("Không tìm thấy món ăn trong phiếu gọi.");
         }
-        
-        // Trong OrderController.cs
 
         [HttpGet("table/{maBan}/checkout")]
         public async Task<IActionResult> GetCheckoutInfoByTable(int maBan)
         {
-            // Bước 1: Tìm các Phiếu gọi của Bàn này chưa được thanh toán. 
-            // Tùy vào thiết kế CSDL của bạn, hãy sửa lại điều kiện Where cho đúng.
-            // Ví dụ: p.TrangThai == "ChuaThanhToan"
             var phieuGois = await _context.PhieuGois
-                .Where(p => p.MaBan == maBan && p.TrangThai != "Đã thanh toán") // <--- Xóa comment và thêm điều kiện này
+                .Where(p => p.MaBan == maBan && p.TrangThai != "Đã thanh toán")
                 .ToListAsync();
 
-            if (!phieuGois.Any()) 
+            if (!phieuGois.Any())
             {
                 return NotFound(new { message = "Bàn chưa có phiếu gọi để thanh toán" });
             }
 
-            // Lấy danh sách Mã phiếu gọi
             var phieuGoiIds = phieuGois.Select(p => p.MaPhieu).ToList();
 
-            // Bước 2: Lấy TẤT CẢ chi tiết món ăn thuộc về các phiếu gọi trên
             var chiTietRaw = await _context.ChiTietPhieuGois
                 .Where(ct => phieuGoiIds.Contains(ct.MaPhieu))
-                .Select(ct => new 
+                .Select(ct => new
                 {
                     maMon = ct.MaMon,
                     soLuong = ct.SoLuong,
@@ -99,16 +118,15 @@ namespace QLNH_Backend.Controllers
                 })
                 .ToListAsync();
 
-            // Bước 3: THỰC HIỆN GỘP MÓN (Chỉ gộp lúc tính tiền)
             var result = chiTietRaw
                 .GroupBy(c => new { c.maMon, c.tenMon, c.gia })
-                .Select(g => new 
+                .Select(g => new
                 {
-                    id = g.Key.maMon,         // Trả về id cho khớp map(item => item.id) bên React
-                    name = g.Key.tenMon,      // Trả về name
-                    qty = g.Sum(c => c.soLuong), // Tổng hợp số lượng các lần gọi
+                    id = g.Key.maMon,
+                    name = g.Key.tenMon,
+                    qty = g.Sum(c => c.soLuong),
                     price = g.Key.gia,
-                    total = g.Sum(c => c.soLuong) * g.Key.gia // Thành tiền
+                    total = g.Sum(c => c.soLuong) * g.Key.gia
                 }).ToList();
 
             return Ok(result);

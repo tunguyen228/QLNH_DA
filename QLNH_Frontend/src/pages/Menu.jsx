@@ -20,6 +20,17 @@ const normalizeMenuItem = (raw) => ({
     image: raw.hinhAnh ?? raw.HinhAnh ?? raw.image ?? raw.Image ?? raw.imageUrl ?? null,
 });
 
+// Bỏ dấu tiếng Việt để tìm kiếm không phân biệt dấu (vd: gõ "ga" vẫn ra "Gà nướng")
+const removeVietnameseTones = (str = '') => {
+    return str
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/đ/g, 'd')
+        .replace(/Đ/g, 'D')
+        .toLowerCase()
+        .trim();
+};
+
 const Menu = () => {
     const navigate = useNavigate();
     const { tableId } = useParams();
@@ -28,10 +39,12 @@ const Menu = () => {
     const [allMenuItems, setAllMenuItems] = useState([]);
     const [menuItems, setMenuItems] = useState([]);
     const [activeCategory, setActiveCategory] = useState(0);
+    const [searchTerm, setSearchTerm] = useState('');
     const [cart, setCart] = useState([]);
     const [tables, setTables] = useState([]);
     const [selectedTable, setSelectedTable] = useState(tableId ? String(tableId) : '');
     const [isSubmitting, setIsSubmitting] = useState(false);
+
     const handleSendOrder = async () => {
         if (cart.length === 0) {
             alert("Giỏ hàng đang trống!");
@@ -44,7 +57,7 @@ const Menu = () => {
         const storedMaNv = localStorage.getItem('maNv');
         if (!storedMaNv) {
             alert("Lỗi phiên đăng nhập! Vui lòng đăng nhập lại để tiếp tục.");
-            return; 
+            return;
         }
         const currentMaNv = parseInt(storedMaNv);
         if (isSubmitting) return;
@@ -60,7 +73,7 @@ const Menu = () => {
             setIsSubmitting(false);
         }
     };
-    
+
     useEffect(() => {
         const loadInitialData = async () => {
             const cats = await fetchCategories();
@@ -72,13 +85,22 @@ const Menu = () => {
         loadInitialData();
     }, []);
 
+    // Lọc theo danh mục và/hoặc từ khóa tìm kiếm
     useEffect(() => {
-        if (activeCategory === 0) {
-            setMenuItems(allMenuItems);
-        } else {
-            setMenuItems(allMenuItems.filter(item => item.categoryId === activeCategory));
+        let filtered = allMenuItems;
+
+        if (searchTerm.trim() !== '') {
+            // Đang tìm kiếm -> tìm trên toàn bộ menu, bỏ qua tab danh mục đang chọn
+            const keyword = removeVietnameseTones(searchTerm);
+            filtered = filtered.filter(item =>
+                removeVietnameseTones(item.name).includes(keyword)
+            );
+        } else if (activeCategory !== 0) {
+            filtered = filtered.filter(item => item.categoryId === activeCategory);
         }
-    }, [activeCategory, allMenuItems]);
+
+        setMenuItems(filtered);
+    }, [activeCategory, allMenuItems, searchTerm]);
 
     useEffect(() => {
         const loadTables = async () => {
@@ -98,10 +120,16 @@ const Menu = () => {
         navigate(value ? `/phuc-vu/menu/${value}` : `/phuc-vu/menu`, { replace: true });
     };
 
+    const handleSearchChange = (e) => {
+        setSearchTerm(e.target.value);
+    };
+
+    const clearSearch = () => setSearchTerm('');
+
     const formatVND = (price) => {
         return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price || 0);
     };
-    
+
     const getQtyInCart = (id) => cart.find(c => c.id === id)?.qty ?? 0;
 
     const addToCart = (item) => {
@@ -139,7 +167,19 @@ const Menu = () => {
                             <Form.Control
                                 placeholder="Tìm kiếm món ăn..."
                                 className="border-0 shadow-none py-2 bg-white"
+                                value={searchTerm}
+                                onChange={handleSearchChange}
                             />
+                            {searchTerm && (
+                                <InputGroup.Text
+                                    className="bg-white border-0 pe-3"
+                                    role="button"
+                                    style={{ cursor: 'pointer' }}
+                                    onClick={clearSearch}
+                                >
+                                    <i className="bi bi-x-circle-fill text-muted"></i>
+                                </InputGroup.Text>
+                            )}
                         </InputGroup>
                         <div className="d-flex align-items-center gap-4">
                             <i className="bi bi-bell-fill fs-5 text-success"></i>
@@ -161,52 +201,40 @@ const Menu = () => {
                         ))}
                     </div>
 
-                    <Row className="g-4 overflow-auto hide-scrollbar flex-grow-1 pb-4" style={{ minHeight: 0 }}>
-                        {menuItems.map((item) => {
-                            const qtyInCart = getQtyInCart(item.id);
-                            return (
-                                <Col sm={6} md={6} lg={4} xl={3} key={item.id}>
-                                    <Card className="h-100 shadow-sm border-0 rounded-4 overflow-hidden">
-                                        <div className="position-relative food-img-placeholder">
-                                            {item.image ? (
-                                                <img
-                                                    src={item.image}
-                                                    alt={item.name}
-                                                    className="w-100 h-100"
-                                                    style={{ objectFit: 'cover' }}
-                                                />
-                                            ) : (
-                                                <i className="bi bi-image fs-1"></i>
-                                            )}
-                                        </div>
-                                        <Card.Body className="d-flex flex-column p-3">
-                                            <Card.Title className="fw-bold mb-1" style={{ fontSize: '14px' }}>
-                                                {item.name}
-                                            </Card.Title>
-                                            <div className="d-flex justify-content-between align-items-center mt-auto">
-                                                <span className="fw-bold" style={{ fontSize: '14px' }}>
-                                                    {formatVND(item.price)}
-                                                </span>
-
-                                                {qtyInCart === 0 ? (
-                                                    <button
-                                                        type="button"
-                                                        className="btn bg-white d-flex align-items-center justify-content-center p-0"
-                                                        style={{
-                                                            width: '20px',
-                                                            height: '28px',
-                                                            border: '1px solid #777',
-                                                            borderRadius: '4px',
-                                                            color: '#000',
-                                                            fontWeight: '500'
-                                                        }}
-                                                        onClick={() => addToCart(item)}
-                                                        aria-label="Thêm vào giỏ"
-                                                    >
-                                                        +
-                                                    </button>
+                    {searchTerm.trim() !== '' && menuItems.length === 0 ? (
+                        <div className="d-flex flex-column align-items-center justify-content-center flex-grow-1 text-muted">
+                            <i className="bi bi-emoji-frown fs-1 mb-2"></i>
+                            <span>Không tìm thấy món nào khớp với "{searchTerm}"</span>
+                        </div>
+                    ) : (
+                        <Row className="g-4 overflow-auto hide-scrollbar flex-grow-1 pb-4" style={{ minHeight: 0, alignContent: 'flex-start' }}>
+                            {menuItems.map((item) => {
+                                const qtyInCart = getQtyInCart(item.id);
+                                return (
+                                    <Col sm={6} md={6} lg={4} xl={3} key={item.id}>
+                                        <Card className="h-100 shadow-sm border-0 rounded-4 overflow-hidden">
+                                            <div className="position-relative food-img-placeholder">
+                                                {item.image ? (
+                                                    <img
+                                                        src={item.image}
+                                                        alt={item.name}
+                                                        className="w-100 h-100"
+                                                        style={{ objectFit: 'cover' }}
+                                                    />
                                                 ) : (
-                                                    <div className="qty-control d-flex align-items-center">
+                                                    <i className="bi bi-image fs-1"></i>
+                                                )}
+                                            </div>
+                                            <Card.Body className="d-flex flex-column p-3">
+                                                <Card.Title className="fw-bold mb-1" style={{ fontSize: '14px' }}>
+                                                    {item.name}
+                                                </Card.Title>
+                                                <div className="d-flex justify-content-between align-items-center mt-auto">
+                                                    <span className="fw-bold" style={{ fontSize: '14px' }}>
+                                                        {formatVND(item.price)}
+                                                    </span>
+
+                                                    {qtyInCart === 0 ? (
                                                         <button
                                                             type="button"
                                                             className="btn bg-white d-flex align-items-center justify-content-center p-0"
@@ -218,39 +246,58 @@ const Menu = () => {
                                                                 color: '#000',
                                                                 fontWeight: '500'
                                                             }}
-                                                            onClick={() => decreaseQty(item.id)}
-                                                            aria-label="Giảm số lượng"
-                                                        >
-                                                            −
-                                                        </button>
-                                                        <span className="qty-value fw-medium" style={{ minWidth: '20px', textAlign: 'center' }}>
-                                                            {qtyInCart}
-                                                        </span>
-                                                        <button
-                                                            type="button"
-                                                            className="btn bg-white d-flex align-items-center justify-content-center p-0"
-                                                            style={{
-                                                                width: '20px',
-                                                                height: '28px',
-                                                                border: '1px solid #777',
-                                                                borderRadius: '4px',
-                                                                color: '#000',
-                                                                fontWeight: '500'
-                                                            }}
-                                                            onClick={() => increaseQty(item.id)}
-                                                            aria-label="Tăng số lượng"
+                                                            onClick={() => addToCart(item)}
+                                                            aria-label="Thêm vào giỏ"
                                                         >
                                                             +
                                                         </button>
-                                                    </div>
-                                                )}
-                                            </div>
-                                        </Card.Body>
-                                    </Card>
-                                </Col>
-                            );
-                        })}
-                    </Row>
+                                                    ) : (
+                                                        <div className="qty-control d-flex align-items-center">
+                                                            <button
+                                                                type="button"
+                                                                className="btn bg-white d-flex align-items-center justify-content-center p-0"
+                                                                style={{
+                                                                    width: '20px',
+                                                                    height: '28px',
+                                                                    border: '1px solid #777',
+                                                                    borderRadius: '4px',
+                                                                    color: '#000',
+                                                                    fontWeight: '500'
+                                                                }}
+                                                                onClick={() => decreaseQty(item.id)}
+                                                                aria-label="Giảm số lượng"
+                                                            >
+                                                                −
+                                                            </button>
+                                                            <span className="qty-value fw-medium" style={{ minWidth: '20px', textAlign: 'center' }}>
+                                                                {qtyInCart}
+                                                            </span>
+                                                            <button
+                                                                type="button"
+                                                                className="btn bg-white d-flex align-items-center justify-content-center p-0"
+                                                                style={{
+                                                                    width: '20px',
+                                                                    height: '28px',
+                                                                    border: '1px solid #777',
+                                                                    borderRadius: '4px',
+                                                                    color: '#000',
+                                                                    fontWeight: '500'
+                                                                }}
+                                                                onClick={() => increaseQty(item.id)}
+                                                                aria-label="Tăng số lượng"
+                                                            >
+                                                                +
+                                                            </button>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </Card.Body>
+                                        </Card>
+                                    </Col>
+                                );
+                            })}
+                        </Row>
+                    )}
                 </Col>
 
                 <Col lg={4} xl={4} className="h-100 pb-4">

@@ -11,5 +11,6 @@ namespace QLNH_Backend.BLL
     public interface ICheckoutService
     {
         Task<CheckoutResponseDTO> ProcessCheckoutAsync(CheckoutRequestDTO request);
+        Task<object> GetCashierByIdAsync(int id);
     }
 }

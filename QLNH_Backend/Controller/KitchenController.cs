@@ -63,5 +63,19 @@ namespace QLNH_Backend.Controller
             public int MonAnId { get; set; }
             public string TrangThai { get; set; }
         }
+        [HttpGet("staff")]
+        public async Task<IActionResult> GetKitchenStaff()
+        {
+            try
+            {
+                // Gọi hàm từ tầng BLL (Service)
+                var staffList = await _bepService.GetKitchenStaffAsync();
+                return Ok(staffList);
+            }
+            catch (System.Exception ex)
+            {
+                return StatusCode(500, new { message = ex.Message });
+            }
+        }
     }
 }

@@ -3,6 +3,16 @@ import axios from 'axios';
 // Thay đổi baseURL phù hợp với port chạy Backend C# của bạn
 const API_URL = 'http://localhost:5000/api';
 
+const getCashierInfo = async (id) => {
+    try {
+        // Thay API_BASE_URL cho khớp với route Controller của bạn
+        const response = await axios.get(`http://localhost:5000/api/checkout/thungan/${id}`);
+        return response.data;
+    } catch (error) {
+        throw error;
+    }
+};
+
 const checkoutService = {
     // Lấy danh sách các bàn ĐANG PHỤC VỤ (có phiếu gọi chưa thanh toán)
     getTablesToCheckout: async () => {

@@ -28,5 +28,20 @@ namespace QLNH_Backend.Controllers
             
             return BadRequest(result); // Trả về HTTP 400 kèm câu thông báo lỗi
         }
+        [HttpGet("thungan/{id}")]
+        public async Task<IActionResult> GetCashierInfo(int id)
+        {
+            try
+            {
+                var cashier = await _checkoutService.GetCashierByIdAsync(id);
+                if (cashier == null) return NotFound(new { message = "Không tìm thấy thu ngân" });
+        
+                return Ok(cashier);
+            }
+            catch (System.Exception ex)
+            {
+                return StatusCode(500, new { message = ex.Message });
+            }
+        }
     }
 }

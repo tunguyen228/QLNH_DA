@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Container, Row, Col, Card, Form, Button, Table, Badge, InputGroup, Spinner } from 'react-bootstrap';
 import { ArrowLeft, QrCode, Cash, CreditCard, Printer } from 'react-bootstrap-icons';
 import SidebarThuNgan from '../components/SidebarThuNgan';
 import checkoutService from '../services/checkoutService';
 
 const GiaoDienThanhToan = () => {
+    const navigate = useNavigate();
     const handleLogout = () => {
         localStorage.clear();
         navigate('/');
@@ -75,6 +77,33 @@ const GiaoDienThanhToan = () => {
             setIsProcessing(false);
         }
     };
+    // Thêm state này dưới các state khác của bạn
+    const [tenThuNgan, setTenThuNgan] = useState('Đang tải...');
+    // Thông tin tài khoản nhận tiền
+    const BANK_ID = "MB"; // Tên viết tắt ngân hàng (VD: VCB, BIDV, ACB, MB...)
+    const ACCOUNT_NO = "1234567890"; // Số tài khoản của bạn
+    const ACCOUNT_NAME = "NGUYEN THI CAM TU"; // Tên chủ tài khoản (không dấu)
+
+// Gọi API lấy thông tin thu ngân
+    useEffect(() => {
+        const fetchCashierInfo = async () => {
+            try {
+                // Lấy ID tài khoản đang đăng nhập từ localStorage (giả sử bạn lưu key là 'userId')
+                // Nếu chưa làm chức năng Login, tạm thời truyền cứng số 1 (ID của 1 nhân viên thu ngân trong DB)
+                const userId = localStorage.getItem('userId') || 1;
+
+                const data = await checkoutService.getCashierInfo(userId);
+                if (data && data.hoTen) {
+                    setTenThuNgan(data.hoTen);
+                }
+            } catch (error) {
+                console.error("Lỗi lấy thông tin thu ngân:", error);
+                setTenThuNgan('Thu Ngân'); // Fallback nếu lỗi
+            }
+        };
+
+        fetchCashierInfo();
+    }, []);
     
     // 1. Fetch danh sách bàn
     useEffect(() => {
@@ -121,9 +150,14 @@ const GiaoDienThanhToan = () => {
     const discount = 0;
     const grandTotal = subTotal + vat - discount;
 
+    // Tạo nội dung chuyển khoản và URL VietQR
+    const addInfo = encodeURIComponent(`Thanh toan HD ${invoiceCode}`);
+    const accountNameEncoded = encodeURIComponent(ACCOUNT_NAME);
+    const vietQrUrl = `https://img.vietqr.io/image/${BANK_ID}-${ACCOUNT_NO}-compact2.png?amount=${grandTotal}&addInfo=${addInfo}&accountName=${accountNameEncoded}`;
+    
     return (
         <div className="d-flex" style={{ height: '100vh', backgroundColor: '#fcfaf5' }}>
-            <SidebarThuNgan hoTen="Minh Tú" onLogout={() => console.log('Đăng xuất')} />
+            <SidebarThuNgan hoTen={tenThuNgan} onLogout={handleLogout} />
 
             <Container fluid className="p-0 overflow-hidden" style={{ fontSize: '0.8rem' }}>
                 {step === 1 ? (
@@ -188,17 +222,17 @@ const GiaoDienThanhToan = () => {
                         <Col md={4} className="bg-white d-flex flex-column h-100 shadow-sm p-4">
                             <h5 className="fw-bold mb-4">Thông tin thanh toán</h5>
 
-                            <Form.Group className="mb-3">
-                                <Form.Label className="fw-bold small text-muted">SĐT TÍCH ĐIỂM (Thành viên)</Form.Label>
-                                <InputGroup>
-                                    <Form.Control
-                                        placeholder="Nhập số điện thoại..."
-                                        value={phoneNumber}
-                                        onChange={(e) => setPhoneNumber(e.target.value)}
-                                    />
-                                    <Button variant="outline-success">Kiểm tra</Button>
-                                </InputGroup>
-                            </Form.Group>
+                            {/*<Form.Group className="mb-3">*/}
+                            {/*    <Form.Label className="fw-bold small text-muted">SĐT TÍCH ĐIỂM (Thành viên)</Form.Label>*/}
+                            {/*    <InputGroup>*/}
+                            {/*        <Form.Control*/}
+                            {/*            placeholder="Nhập số điện thoại..."*/}
+                            {/*            value={phoneNumber}*/}
+                            {/*            onChange={(e) => setPhoneNumber(e.target.value)}*/}
+                            {/*        />*/}
+                            {/*        <Button variant="outline-success">Kiểm tra</Button>*/}
+                            {/*    </InputGroup>*/}
+                            {/*</Form.Group>*/}
 
                             <Form.Group className="mb-4">
                                 <Form.Label className="fw-bold small text-muted">MÃ GIẢM GIÁ</Form.Label>
@@ -248,8 +282,6 @@ const GiaoDienThanhToan = () => {
                                 <ArrowLeft className="me-2" /> Quay lại đơn hàng
                             </Button>
 
-                            <h4 className="fw-bold mb-3">Phương thức thanh toán</h4>
-
                             {/* Giảm margin bottom từ mb-5 xuống mb-3, giảm padding nút py-4 xuống py-3 */}
                             <Row className="g-3 mb-3">
                                 <Col>
@@ -275,12 +307,16 @@ const GiaoDienThanhToan = () => {
                             {paymentMethod === 'qr' && (
                                 /* Giảm padding từ p-5 xuống p-3 */
                                 <Card className="border-0 shadow-sm text-center p-3 flex-grow-1 d-flex flex-column justify-content-center align-items-center bg-light rounded-4">
-                                    <h6 className="fw-bold text-muted mb-3">QUÉT MÃ ĐỂ TRẢ</h6>
                                     <div className="bg-white p-2 rounded-4 mb-3 shadow-sm">
                                         {/* Ép kích thước ảnh QR nhỏ lại bằng style */}
-                                        <img src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=ThanhToan_${grandTotal}`} alt="QR" style={{ width: '160px', height: '160px' }} />
+                                        <img
+                                            src={vietQrUrl}
+                                            alt="VietQR"
+                                            style={{ width: '250px', height: 'auto', objectFit: 'contain' }}
+                                        />
                                     </div>
                                     <h3 className="fw-bold text-success mb-1">{grandTotal.toLocaleString()} VNĐ</h3>
+                                    <small className="text-muted">Nội dung CK: <strong className="text-dark">Thanh toan HD {invoiceCode}</strong></small>
                                     <small className="text-muted">Đang chờ khách hàng thanh toán...</small>
                                 </Card>
                             )}
