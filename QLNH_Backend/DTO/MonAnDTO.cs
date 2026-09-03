@@ -6,7 +6,7 @@ public class MonAnDTO
     public string TenMon { get; set; } = string.Empty;
     public string DonVi { get; set; } = string.Empty;
     public decimal GiaTien { get; set; }
-    public string? HinhAnh { get; set; }
+    public string HinhAnh { get; set; }
     public bool DangKinhDoanh { get; set; }
     
     public int MaNhom { get; set; }
