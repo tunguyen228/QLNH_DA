@@ -6,28 +6,26 @@ import TableMap from './pages/TableMap';
 import Menu from './pages/Menu';
 import TheoDoiMon from './pages/TheoDoiMon';
 import Kitchen from './pages/Kitchen';
+import QuanLy from './pages/QuanLy'; // Thêm trang Quản lý
 import { ToastProvider } from './contexts/ToastProvider';
 import GiaoDienThanhToan from './pages/GiaoDienThanhToan';
 import { NotificationProvider } from './contexts/NotificationProvider.jsx';
 import TransactionHistory from "./pages/TransactionHistory.jsx";
+import TableQRGenerator from './pages/TableQRGenerator';
 
 // Component bảo vệ Route: Kiểm tra cả Token (Đã đăng nhập) và Role (Có quyền)
 const ProtectedRoute = ({ allowedRoles, children }) => {
     const token = localStorage.getItem('token');
-    // GIẢ ĐỊNH: Bạn lưu role của user ở localStorage khi đăng nhập thành công
     const userRole = localStorage.getItem('role');
 
     if (!token) {
-        // Chưa đăng nhập -> Về trang login
         return <Navigate to="/" replace />;
     }
 
     if (allowedRoles && !allowedRoles.includes(userRole)) {
-        // Có token nhưng sai Role -> Đẩy về trang báo lỗi hoặc trang chủ
         return <Navigate to="/unauthorized" replace />;
     }
 
-    // Nếu dùng bọc thẻ <Route element={...}> thì dùng <Outlet />, nếu bọc component thì dùng children
     return children ? children : <Outlet />;
 };
 
@@ -36,12 +34,22 @@ function App() {
         <ToastProvider>
             <NotificationProvider>
                 <Routes>
+                    {/* Trang đăng nhập chung */}
                     <Route path="/" element={<LoginForm />} />
+
+                    {/* Trang xem và in danh sách mã QR */}
+                    <Route path="/qr-tables" element={<TableQRGenerator />} />
+
+                    {/* ========================================================= */}
+                    {/* KHU VỰC DÀNH CHO KHÁCH QUÉT QR (KHÔNG CẦN ĐĂNG NHẬP)        */}
+                    {/* ========================================================= */}
+                    <Route path="/menu" element={<Menu />} />
+                    <Route path="/menu/:tableId" element={<Menu />} />
 
                     {/* Route báo lỗi khi cố truy cập trái phép */}
                     <Route path="/unauthorized" element={<h2 style={{textAlign: 'center', marginTop: '50px'}}>Bạn không có quyền truy cập trang này!</h2>} />
 
-                    {/* NHÓM QUYỀN: PHỤC VỤ (Hoặc Admin cũng vào được) */}
+                    {/* NHÓM QUYỀN: PHỤC VỤ */}
                     <Route path="/phuc-vu" element={
                         <ProtectedRoute allowedRoles={['Phục vụ']}>
                             <GiaoDienPhucVu />
@@ -67,6 +75,13 @@ function App() {
                         <Route path="/thu-ngan/thanh-toan" element={<GiaoDienThanhToan />} />
                         <Route path="/thu-ngan/lich-su" element={<TransactionHistory />} />
                     </Route>
+
+                    {/* NHÓM QUYỀN: QUẢN LÝ / ADMIN */}
+                    <Route path="/quan-ly/*" element={
+                        <ProtectedRoute allowedRoles={['Quản lý']}>
+                            <QuanLy />
+                        </ProtectedRoute>
+                    } />
 
                 </Routes>
             </NotificationProvider>

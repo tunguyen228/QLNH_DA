@@ -4,7 +4,8 @@ import { Link, useLocation } from 'react-router-dom';
 
 const SidebarNavItem = ({ to, icon, label, showDot = false }) => {
     const location = useLocation();
-    const isActive = location.pathname.includes(to);
+    // Dùng so sánh chính xác pathname thay vì includes() để không bị active nhầm
+    const isActive = location.pathname === to;
 
     return (
         <Nav.Link

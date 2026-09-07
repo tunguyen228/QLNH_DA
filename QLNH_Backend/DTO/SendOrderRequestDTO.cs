@@ -13,4 +13,17 @@ namespace QLNH_Backend.DTO
         public int SoLuong { get; set; }
         public string GhiChu { get; set; }
     }
+    
+    public class QRClientOrderRequestDTO
+    {
+        public int MaBan { get; set; }
+        public List<QRClientOrderItemDTO> Items { get; set; }
+    }
+
+    public class QRClientOrderItemDTO
+    {
+        public int MaMon { get; set; }
+        public int SoLuong { get; set; }
+        public string GhiChu { get; set; }
+    }
 }

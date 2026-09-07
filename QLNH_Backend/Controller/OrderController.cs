@@ -8,6 +8,8 @@ using QLNH_Backend.BLL;
 using QLNH_Backend.DAL; 
 using QLNH_Backend.Hubs;
 using Microsoft.AspNetCore.SignalR;
+using QLNH_Backend.DTO;
+using QLNH_Backend.Models;
 
 namespace QLNH_Backend.Controllers
 {
@@ -138,6 +140,54 @@ namespace QLNH_Backend.Controllers
                 }).ToList();
 
             return Ok(result);
+        }
+        
+        [HttpPost("qr-order")]
+        public async Task<IActionResult> CreateQRClientOrder([FromBody] QRClientOrderRequestDTO request)
+        {
+            if (request == null || request.Items == null || !request.Items.Any())
+            {
+                return BadRequest(new { message = "Giỏ hàng trống hoặc dữ liệu không hợp lệ." });
+            }
+
+            // 1. Kiểm tra bàn có tồn tại hay không
+            var ban = await _context.BanAns.FirstOrDefaultAsync(b => b.MaBan == request.MaBan);
+            if (ban == null)
+            {
+                return NotFound(new { message = "Không tìm thấy bàn ăn tương ứng." });
+            }
+
+            // 2. Tạo phiếu gọi món mới cho khách quét QR (Không bắt buộc mã nhân viên)
+            var phieuGoi = new PhieuGoi
+            {
+                MaBan = request.MaBan,
+                ThoiGianTao = DateTime.SpecifyKind(DateTime.UtcNow, DateTimeKind.Utc),
+                TrangThai = "Chờ chế biến", // Hoặc trạng thái tùy chỉnh của quán
+                ChiTietPhieuGois = request.Items.Select(i => new ChiTietPhieuGoi
+                {
+                    MaMon = i.MaMon,
+                    SoLuong = i.SoLuong,
+                    GhiChu = i.GhiChu ?? string.Empty,
+                    TrangThai = "Chờ chế biến"
+                }).ToList()
+            };
+
+            _context.PhieuGois.Add(phieuGoi);
+
+            // Cập nhật trạng thái bàn thành "Có khách" nếu cần
+            ban.TrangThai = "Đang phục vụ";
+
+            await _context.SaveChangesAsync();
+
+            // 3. Bắn thông báo Realtime qua SignalR tới màn hình bếp (Kitchen)
+            // Khớp với tên sự kiện mà màn hình bếp của bạn đang lắng nghe
+            await _hubContext.Clients.All.SendAsync("ReceiveNewOrder", phieuGoi);
+
+            return Ok(new { 
+                success = true, 
+                message = "Đặt món thành công!", 
+                maPhieu = phieuGoi.MaPhieu 
+            });
         }
     }
 }

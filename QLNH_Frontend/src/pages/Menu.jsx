@@ -416,7 +416,6 @@ const Menu = () => {
                                     )}
                                 </Button>
                             </div>
-
                         </Card.Body>
                     </Card>
                 </Col>

@@ -34,6 +34,8 @@ const LoginForm = () => {
                 navigate('/bep');
             } else if(role === 'Thu ngân') {
                 navigate('/thu-ngan');
+            } else if (role === 'Quản lý') { // Thêm dòng này để nhận diện quyền quản lý
+                navigate('/quan-ly');
             } else {
                 navigate('/');
             }
