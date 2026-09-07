@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { HubConnectionBuilder } from '@microsoft/signalr';
+import * as signalR from "@microsoft/signalr";
 
 const NotificationContext = createContext(null);
 
@@ -10,7 +11,10 @@ export const NotificationProvider = ({ children }) => {
 
     useEffect(() => {
         const connection = new HubConnectionBuilder()
-            .withUrl("http://localhost:5000/notificationHub")
+            .withUrl("http://localhost:5000/notificationHub", { // Lưu ý thay đúng URL backend của bạn nếu đang dùng port khác
+                skipNegotiation: true,
+                transport: signalR.HttpTransportType.WebSockets
+            })
             .withAutomaticReconnect()
             .build();
 

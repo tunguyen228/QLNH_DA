@@ -4,6 +4,8 @@ using QLNH_Backend.DTO;
 using QLNH_Backend.DAL;
 using QLNH_Backend.BLL;
 using QLNH_Backend.Models; 
+using Microsoft.AspNetCore.SignalR;
+using QLNH_Backend.Hubs;
 
 namespace QLNH_Backend.Controllers
 {
@@ -13,10 +15,12 @@ namespace QLNH_Backend.Controllers
     {
         private readonly AppDbContext _context;
 		private readonly IBepService _bepService;
-        public MenuController(AppDbContext context, IBepService bepService)
+        private readonly IHubContext<NotificationHub> _hubContext;
+        public MenuController(AppDbContext context, IBepService bepService, IHubContext<NotificationHub> hubContext)
         {
             _context = context; 
 			_bepService = bepService;
+            _hubContext = hubContext;
         }
 
         [HttpGet]
@@ -49,10 +53,13 @@ namespace QLNH_Backend.Controllers
                     return BadRequest("Dữ liệu order không hợp lệ.");
 
                 var result = await _bepService.GuiOrderXuongBep(request);
-                
+
                 if (result)
+                {
+                    await _hubContext.Clients.All.SendAsync("CoDonOrderMoi");
                     return Ok(new { message = "Đã gửi order xuống bếp thành công" });
-                    
+                }
+                
                 return StatusCode(500, "Lỗi hệ thống khi gửi order.");
             }
             catch (System.Exception ex)

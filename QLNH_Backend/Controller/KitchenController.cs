@@ -2,6 +2,8 @@ using Microsoft.AspNetCore.Mvc;
 using QLNH_Backend.BLL;
 using QLNH_Backend.DTO;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.SignalR;
+using QLNH_Backend.Hubs;
 
 namespace QLNH_Backend.Controller
 {
@@ -10,10 +12,12 @@ namespace QLNH_Backend.Controller
     public class KitchenController : ControllerBase
     {
         private readonly IBepService _bepService;
+        private readonly IHubContext<NotificationHub> _hubContext;
 
-        public KitchenController(IBepService bepService)
+        public KitchenController(IBepService bepService, IHubContext<NotificationHub> hubContext)
         {
             _bepService = bepService;
+            _hubContext = hubContext;
         }
 
         [HttpGet("orders")]
@@ -53,6 +57,7 @@ namespace QLNH_Backend.Controller
             var result = await _bepService.CapNhatTrangThaiMonAsync(request.PhieuGoiId, request.MonAnId, request.TrangThai);
             if (result)
             {
+                await _hubContext.Clients.All.SendAsync("CapNhatTrangThaiMon");
                 return Ok(new { message = "Cập nhật thành công!" });
             }
             return BadRequest("Không tìm thấy món ăn trong phiếu này.");

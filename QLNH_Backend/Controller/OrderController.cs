@@ -6,6 +6,8 @@ using Microsoft.EntityFrameworkCore;
 using System.Linq;
 using QLNH_Backend.BLL;
 using QLNH_Backend.DAL; 
+using QLNH_Backend.Hubs;
+using Microsoft.AspNetCore.SignalR;
 
 namespace QLNH_Backend.Controllers
 {
@@ -15,11 +17,13 @@ namespace QLNH_Backend.Controllers
     {
         private readonly IBepService _bepService;
         private readonly AppDbContext _context;
+        private readonly IHubContext<NotificationHub> _hubContext;
 
-        public OrderController(IBepService bepService, AppDbContext context)
+        public OrderController(IBepService bepService, AppDbContext context, IHubContext<NotificationHub> hubContext)
         {
             _bepService = bepService;
             _context = context;
+            _hubContext = hubContext;
         }
 
         [HttpGet("danhsach")]
@@ -88,7 +92,11 @@ namespace QLNH_Backend.Controllers
         public async Task<IActionResult> ServeDish(int phieuGoiId, int monAnId)
         {
             var result = await _bepService.CapNhatTrangThaiMonAsync(phieuGoiId, monAnId, "DaPhucVu");
-            if (result) return Ok(new { message = "Đã phục vụ món thành công" });
+            if (result)
+            {
+                await _hubContext.Clients.All.SendAsync("MonDaDuocPhucVu");
+                return Ok(new { message = "Đã phục vụ món thành công" });
+            }
 
             return BadRequest("Không tìm thấy món ăn trong phiếu gọi.");
         }

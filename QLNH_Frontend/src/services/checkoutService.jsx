@@ -63,6 +63,23 @@ const checkoutService = {
             }
             throw new Error("Lỗi kết nối máy chủ");
         }
+    },
+    
+    getCashierInfo: async (userId) => {
+        try {
+            // Thay đổi URL endpoint này cho khớp với cấu hình API Backend C# của bạn
+            const response = await fetch(`http://localhost:5000/api/user/${userId}`);
+
+            if (!response.ok) {
+                throw new Error('Lỗi mạng khi tải thông tin thu ngân');
+            }
+
+            // Giả sử API trả về dạng { id: 1, hoTen: "Nguyễn Thị Cẩm Tú", ... }
+            return await response.json();
+        } catch (error) {
+            console.error("Lỗi API getCashierInfo:", error);
+            throw error;
+        }
     }
 };
 

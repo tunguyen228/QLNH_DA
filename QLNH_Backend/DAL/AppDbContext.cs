@@ -28,7 +28,6 @@ public class AppDbContext : DbContext
     public virtual DbSet<PhieuNhap>  PhieuNhaps { get; set; }
     public virtual DbSet<PhieuXuat> PhieuXuats { get; set; }
     public virtual DbSet<ThongBao> ThongBaos { get; set; }
-    public DbSet<TransactionDTO> Transactions { get; set; }
     
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -326,6 +325,5 @@ public class AppDbContext : DbContext
                   .OnDelete(DeleteBehavior.SetNull);
         });
         
-        modelBuilder.Entity<TransactionDTO>().HasKey(t => t.Id);
     }
 }

@@ -2,6 +2,8 @@ using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
 using QLNH_Backend.BLL;
 using QLNH_Backend.DTO;
+using Microsoft.AspNetCore.SignalR;
+using QLNH_Backend.Hubs;
 
 namespace QLNH_Backend.Controllers
 {
@@ -10,10 +12,12 @@ namespace QLNH_Backend.Controllers
     public class CheckoutController : ControllerBase
     {
         private readonly ICheckoutService _checkoutService;
+        private readonly IHubContext<NotificationHub> _hubContext;
 
-        public CheckoutController(ICheckoutService checkoutService)
+        public CheckoutController(ICheckoutService checkoutService, IHubContext<NotificationHub> hubContext)
         {
             _checkoutService = checkoutService;
+            _hubContext = hubContext;
         }
 
         [HttpPost]
@@ -23,6 +27,7 @@ namespace QLNH_Backend.Controllers
             
             if (result.Success)
             {
+                await _hubContext.Clients.All.SendAsync("ThanhToanThanhCong");
                 return Ok(result); // Trả về HTTP 200 kèm DTO
             }
             
