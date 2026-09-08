@@ -35,17 +35,33 @@ export const getMenuItems = async () => {
     }
 };
 
+// Dành cho NHÂN VIÊN đã đăng nhập - cần maNv
 export const sendOrderToKitchen = async (tableId, maNv, cartItems) => {
     const payload = {
         tableId: tableId,
         maNv: maNv,
         items: cartItems.map(item => ({
-            monAnId: item.id, 
+            monAnId: item.id,
             soLuong: item.qty,
-            ghiChu: item.ghiChu || ""
+            ghiChu: item.note || item.ghiChu || ""
         }))
     };
 
     const response = await axios.post(`${API_BASE_URL}/Menu/SendOrder`, payload);
+    return response.data;
+};
+
+// NEW: Dành cho KHÁCH quét mã QR - không cần đăng nhập, không cần maNv
+export const sendQRClientOrder = async (maBan, cartItems) => {
+    const payload = {
+        maBan: Number(maBan),
+        items: cartItems.map(item => ({
+            maMon: item.id,
+            soLuong: item.qty,
+            ghiChu: item.note || item.ghiChu || ""
+        }))
+    };
+
+    const response = await axios.post(`${API_BASE_URL}/Order/qr-order`, payload);
     return response.data;
 };

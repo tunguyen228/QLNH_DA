@@ -46,23 +46,3 @@ export const updateOrderStatus = async (maPhieu, maMon, TrangThai) => {
         throw error;
     }
 };
-
-export const startCookingOrder = async (maPhieu, maMon) => {
-    try {
-        const response = await axios.put(`${API_BASE_URL}/orders/${maPhieu}/${maMon}/start`);
-        return response.data;
-    } catch (error) {
-        console.error(`Lỗi khi bắt đầu nấu món (Phiếu: ${maPhieu}, Món: ${maMon}):`, error);
-        throw error;
-    }
-};
-
-export const finishCookingOrder = async (maPhieu, maMon) => {
-    try {
-        const response = await axios.put(`${API_BASE_URL}/orders/${maPhieu}/${maMon}/finish`);
-        return response.data;
-    } catch (error) {
-        console.error(`Lỗi khi hoàn thành món (Phiếu: ${maPhieu}, Món: ${maMon}):`, error);
-        throw error;
-    }
-};

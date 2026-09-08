@@ -31,8 +31,6 @@ namespace QLNH_Backend.Controllers
         [HttpGet("danhsach")]
         public async Task<IActionResult> GetDanhSachOrder()
         {
-            // FIX: DateTime.Today có Kind = Local -> Npgsql ném lỗi khi cột
-            // ThoiGianTao là timestamptz. Phải ép về UTC như đã làm bên HoaDon.cs.
             var today = DateTime.SpecifyKind(DateTime.UtcNow.Date, DateTimeKind.Utc);
 
             var orders = await _context.PhieuGois
@@ -150,37 +148,32 @@ namespace QLNH_Backend.Controllers
                 return BadRequest(new { message = "Giỏ hàng trống hoặc dữ liệu không hợp lệ." });
             }
 
-            // 1. Kiểm tra bàn có tồn tại hay không
             var ban = await _context.BanAns.FirstOrDefaultAsync(b => b.MaBan == request.MaBan);
             if (ban == null)
             {
                 return NotFound(new { message = "Không tìm thấy bàn ăn tương ứng." });
             }
 
-            // 2. Tạo phiếu gọi món mới cho khách quét QR (Không bắt buộc mã nhân viên)
             var phieuGoi = new PhieuGoi
             {
                 MaBan = request.MaBan,
+                MaNv = null,
                 ThoiGianTao = DateTime.SpecifyKind(DateTime.UtcNow, DateTimeKind.Utc),
-                TrangThai = "Chờ chế biến", // Hoặc trạng thái tùy chỉnh của quán
+                TrangThai = "ChoCheBien", 
                 ChiTietPhieuGois = request.Items.Select(i => new ChiTietPhieuGoi
                 {
                     MaMon = i.MaMon,
                     SoLuong = i.SoLuong,
                     GhiChu = i.GhiChu ?? string.Empty,
-                    TrangThai = "Chờ chế biến"
+                    TrangThai = "ChoCheBien" 
                 }).ToList()
             };
 
             _context.PhieuGois.Add(phieuGoi);
-
-            // Cập nhật trạng thái bàn thành "Có khách" nếu cần
             ban.TrangThai = "Đang phục vụ";
 
             await _context.SaveChangesAsync();
 
-            // 3. Bắn thông báo Realtime qua SignalR tới màn hình bếp (Kitchen)
-            // Khớp với tên sự kiện mà màn hình bếp của bạn đang lắng nghe
             await _hubContext.Clients.All.SendAsync("ReceiveNewOrder", phieuGoi);
 
             return Ok(new { 

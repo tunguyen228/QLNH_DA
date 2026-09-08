@@ -32,6 +32,7 @@ namespace QLNH_Backend.Controller
                 }
                 else if (status == "cooking") 
                 {
+                    // LƯU Ý: Đảm bảo bạn đã viết hàm này trong BepService
                     var cookingOrders = await _bepService.GetDanhSachMonDangCheBienAsync();
                     return Ok(cookingOrders);
                 }
@@ -57,23 +58,25 @@ namespace QLNH_Backend.Controller
             var result = await _bepService.CapNhatTrangThaiMonAsync(request.PhieuGoiId, request.MonAnId, request.TrangThai);
             if (result)
             {
-                await _hubContext.Clients.All.SendAsync("CapNhatTrangThaiMon");
+                // ĐÃ XÓA SIGNALR Ở ĐÂY VÌ BEPSERVICE ĐÃ XỬ LÝ (BAO GỒM CẢ TENMON, MABAN)
                 return Ok(new { message = "Cập nhật thành công!" });
             }
             return BadRequest("Không tìm thấy món ăn trong phiếu này.");
         }
+
         public class UpdateStatusRequest
         {
             public int PhieuGoiId { get; set; }
             public int MonAnId { get; set; }
             public string TrangThai { get; set; }
         }
+
         [HttpGet("staff")]
         public async Task<IActionResult> GetKitchenStaff()
         {
             try
             {
-                // Gọi hàm từ tầng BLL (Service)
+                // LƯU Ý: Đảm bảo bạn đã viết hàm này trong BepService
                 var staffList = await _bepService.GetKitchenStaffAsync();
                 return Ok(staffList);
             }

@@ -78,8 +78,9 @@ namespace QLNH_Backend.BLL
                 }
 
                 await _context.SaveChangesAsync();
-
+                await _hubContext.Clients.All.SendAsync("NewOrderToKitchen");
                 await transaction.CommitAsync();
+                
                 return true;
             }
             catch

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Container, Row, Col, Navbar, Button, Card, ListGroup, Image } from 'react-bootstrap';
 import KitchenOrderCard from '../components/KitchenOrderCard';
-// LƯU Ý: Nhớ thêm getKitchenStaff vào file kitchenService của bạn nhé!
+import { useNotifications } from '../contexts/NotificationProvider';
 import { getPendingOrders, getCookingOrders, updateOrderStatus, getKitchenStaff } from '../services/kitchenService';
 import '../CSS/Kitchen.css';
 
@@ -11,12 +11,16 @@ const Kitchen = () => {
     const [pendingOrders, setPendingOrders] = useState([]);
     const [cookingOrders, setCookingOrders] = useState([]);
     const [kitchenStaff, setKitchenStaff] = useState([]); // State lưu nhân sự bếp
-
+    const { kitchenRefreshTrigger } = useNotifications();
+    
     const loadData = async () => {
         try {
             const pending = await getPendingOrders();
             const cooking = await getCookingOrders();
 
+            console.log("Dữ liệu chờ chế biến (pending):", pending);
+            console.log("Dữ liệu đang chế biến (cooking):", cooking);
+            
             // Gọi hàm lấy nhân sự (nếu api lỗi thì gán mảng rỗng để không bị crash)
             let staff = [];
             try {
@@ -35,7 +39,7 @@ const Kitchen = () => {
 
     useEffect(() => {
         loadData();
-    }, []);
+    }, [kitchenRefreshTrigger]);
 
     const handleStartCooking = async (maPhieu, maMon) => {
         try {
