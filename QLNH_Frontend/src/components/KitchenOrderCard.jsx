@@ -13,12 +13,23 @@ const KitchenOrderCard = ({ order, status, onActionClick, onReportMissingIngredi
                         <div className="text-muted fw-medium" style={{ fontSize: '14px' }}>
                             <i className="bi bi-geo-alt me-1"></i> Bàn: {order.tenBan}
                         </div>
+
+                        {/* GHI CHÚ: Tinh chỉnh lại UI cho nổi bật hơn trên màn hình bếp */}
                         {order.ghiChu && (
-                            <div className="text-danger mt-1" style={{ fontSize: '13px', fontStyle: 'italic' }}>
-                                * Ghi chú: {order.ghiChu}
+                            <div className="mt-2 text-danger fw-bold"
+                                 style={{
+                                     fontSize: '13px',
+                                     backgroundColor: '#fff3cd', // Nền vàng cảnh báo
+                                     padding: '4px 8px',
+                                     borderRadius: '4px',
+                                     display: 'inline-block'
+                                 }}>
+                                <i className="bi bi-exclamation-triangle-fill me-1"></i>
+                                Ghi chú: {order.ghiChu}
                             </div>
                         )}
                     </div>
+
                     <Badge className="px-3 py-2 rounded text-dark bg-light border" style={{ fontSize: '15px' }}>
                         x{order.soLuong}
                     </Badge>

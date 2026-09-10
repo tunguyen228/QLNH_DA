@@ -65,3 +65,11 @@ export const sendQRClientOrder = async (maBan, cartItems) => {
     const response = await axios.post(`${API_BASE_URL}/Order/qr-order`, payload);
     return response.data;
 };
+
+export const createMenuItem = async (data) => (await axios.post(`${API_BASE_URL}/MonAn`, data)).data;
+export const updateMenuItem = async (id, data) => (await axios.put(`${API_BASE_URL}/MonAn/${id}`, data)).data;
+export const deleteMenuItem = async (id) => { await axios.delete(`${API_BASE_URL}/MonAn/${id}`); };
+
+export const getAllNhomMon = async () => (await axios.get(`${API_BASE_URL}/NhomMon`)).data;
+export const createNhomMon = async (data) => (await axios.post(`${API_BASE_URL}/NhomMon`, data)).data;
+export const deleteNhomMon = async (id) => { await axios.delete(`${API_BASE_URL}/NhomMon/${id}`); };

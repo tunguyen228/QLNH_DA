@@ -3,8 +3,13 @@ import { Row, Col, Card, Table, Badge, Spinner, Button } from 'react-bootstrap';
 import { Routes, Route, useNavigate, Navigate } from 'react-router-dom';
 import { FaPlus, FaEdit, FaTrash, FaChartLine, FaBoxOpen } from 'react-icons/fa';
 import SidebarQuanLy from '../components/SidebarQuanLy';
-import { getMenuItems } from '../services/menuService';
 import TransactionHistory from './TransactionHistory';
+import StaffModal from '../components/StaffModal';
+import { getAllStaff, createStaff, updateStaff, deleteStaff } from '../services/staffService';
+import MenuModal from '../components/MenuModal';
+import { getMenuItems, createMenuItem, updateMenuItem, deleteMenuItem, getAllNhomMon } from '../services/menuService';
+import TableModal from '../components/TableModal';
+import { fetchAllTables, createTable, updateTable, deleteTable } from '../services/tableService';
 import axios from 'axios';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
@@ -171,48 +176,82 @@ function DashboardTab() {
 
 // TAB 2: Quản lý nhân viên
 function StaffTab() {
-    const [nhanVienList] = useState([
-        { id: 1, hoTen: 'Nguyễn Văn A', chucVu: 'Thu ngân', sdt: '0901234567', trangThai: 'Đang làm' },
-    ]);
+    const [nhanVienList, setNhanVienList] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [showModal, setShowModal] = useState(false);
+    const [editingStaff, setEditingStaff] = useState(null);
+
+    useEffect(() => { loadStaff(); }, []);
+
+    const loadStaff = async () => {
+        setLoading(true);
+        try {
+            const data = await getAllStaff();
+            setNhanVienList(data);
+        } catch (error) {
+            console.error("Lỗi tải nhân viên:", error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleSave = async (formData, id) => {
+        if (id) await updateStaff(id, formData);
+        else await createStaff(formData);
+        await loadStaff();
+    };
+
+    const handleDelete = async (id) => {
+        if (!window.confirm('Xác nhận xóa nhân viên này?')) return;
+        try {
+            await deleteStaff(id);
+            await loadStaff();
+        } catch (error) {
+            alert('Không thể xóa nhân viên này');
+        }
+    };
 
     return (
         <div>
             <div className="d-flex justify-content-between align-items-center mb-4">
                 <h2 className="fw-bold" style={{ color: '#1E3923' }}>Quản lý nhân viên</h2>
-                <Button variant="success" className="d-flex align-items-center gap-2" style={{ backgroundColor: '#1E3923', borderColor: '#1E3923' }}>
+                <Button variant="success" className="d-flex align-items-center gap-2"
+                        style={{ backgroundColor: '#1E3923', borderColor: '#1E3923' }}
+                        onClick={() => { setEditingStaff(null); setShowModal(true); }}>
                     <FaPlus /> Thêm nhân viên
                 </Button>
             </div>
 
             <Card className="shadow-sm border-0 p-3 bg-white">
-                <Table hover responsive className="align-middle">
-                    <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Họ tên</th>
-                        <th>Chức vụ</th>
-                        <th>Số điện thoại</th>
-                        <th>Trạng thái</th>
-                        <th className="text-center">Thao tác</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    {nhanVienList.map((nv) => (
-                        <tr key={nv.id}>
-                            <td>{nv.id}</td>
-                            <td className="fw-bold">{nv.hoTen}</td>
-                            <td>{nv.chucVu}</td>
-                            <td>{nv.sdt}</td>
-                            <td><Badge bg="success">{nv.trangThai}</Badge></td>
-                            <td className="text-center">
-                                <Button variant="outline-primary" size="sm" className="me-2"><FaEdit /></Button>
-                                <Button variant="outline-danger" size="sm"><FaTrash /></Button>
-                            </td>
+                {loading ? <div className="text-center py-4"><Spinner animation="border" /></div> : (
+                    <Table hover responsive className="align-middle">
+                        <thead>
+                        <tr>
+                            <th>ID</th><th>Họ tên</th><th>Chức vụ</th><th>Số điện thoại</th><th>Trạng thái</th>
+                            <th className="text-center">Thao tác</th>
                         </tr>
-                    ))}
-                    </tbody>
-                </Table>
+                        </thead>
+                        <tbody>
+                        {nhanVienList.map((nv) => (
+                            <tr key={nv.maNV}>
+                                <td>{nv.maNV}</td>
+                                <td className="fw-bold">{nv.hoTen}</td>
+                                <td>{nv.chucVu}</td>
+                                <td>{nv.sdt}</td>
+                                <td><Badge bg={nv.trangThai === 'Đang làm' ? 'success' : 'secondary'}>{nv.trangThai}</Badge></td>
+                                <td className="text-center">
+                                    <Button variant="outline-primary" size="sm" className="me-2"
+                                            onClick={() => { setEditingStaff(nv); setShowModal(true); }}><FaEdit /></Button>
+                                    <Button variant="outline-danger" size="sm" onClick={() => handleDelete(nv.maNV)}><FaTrash /></Button>
+                                </td>
+                            </tr>
+                        ))}
+                        </tbody>
+                    </Table>
+                )}
             </Card>
+
+            <StaffModal show={showModal} onHide={() => setShowModal(false)} onSave={handleSave} editingStaff={editingStaff} />
         </div>
     );
 }
@@ -220,16 +259,19 @@ function StaffTab() {
 // TAB 3: Quản lý món ăn
 function MenuTab() {
     const [monAnList, setMonAnList] = useState([]);
+    const [nhomList, setNhomList] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [showModal, setShowModal] = useState(false);
+    const [editingItem, setEditingItem] = useState(null);
 
-    useEffect(() => {
-        loadMenu();
-    }, []);
+    useEffect(() => { loadAll(); }, []);
 
-    const loadMenu = async () => {
+    const loadAll = async () => {
+        setLoading(true);
         try {
-            const data = await getMenuItems();
-            setMonAnList(data);
+            const [mon, nhom] = await Promise.all([getMenuItems(), getAllNhomMon()]);
+            setMonAnList(mon);
+            setNhomList(nhom);
         } catch (error) {
             console.error("Lỗi tải món ăn:", error);
         } finally {
@@ -237,28 +279,36 @@ function MenuTab() {
         }
     };
 
+    const handleSave = async (formData, id) => {
+        if (id) await updateMenuItem(id, formData);
+        else await createMenuItem(formData);
+        await loadAll();
+    };
+
+    const handleDelete = async (id) => {
+        if (!window.confirm('Xác nhận xóa món ăn này?')) return;
+        try { await deleteMenuItem(id); await loadAll(); }
+        catch { alert('Không thể xóa món ăn này'); }
+    };
+
     return (
         <div>
             <div className="d-flex justify-content-between align-items-center mb-4">
                 <h2 className="fw-bold" style={{ color: '#1E3923' }}>Quản lý thực đơn món ăn</h2>
-                <Button variant="success" className="d-flex align-items-center gap-2" style={{ backgroundColor: '#1E3923', borderColor: '#1E3923' }}>
+                <Button variant="success" className="d-flex align-items-center gap-2"
+                        style={{ backgroundColor: '#1E3923', borderColor: '#1E3923' }}
+                        onClick={() => { setEditingItem(null); setShowModal(true); }}>
                     <FaPlus /> Thêm món mới
                 </Button>
             </div>
 
             <Card className="shadow-sm border-0 p-3 bg-white">
-                {loading ? (
-                    <div className="text-center py-4"><Spinner animation="border" /></div>
-                ) : (
+                {loading ? <div className="text-center py-4"><Spinner animation="border" /></div> : (
                     <Table hover responsive className="align-middle">
                         <thead>
                         <tr>
-                            <th>Mã Món</th>
-                            <th>Tên món</th>
-                            <th>Nhóm món</th>
-                            <th>Đơn giá</th>
-                            <th>Trạng thái kinh doanh</th>
-                            <th className="text-center">Thao tác</th>
+                            <th>Mã Món</th><th>Tên món</th><th>Nhóm món</th><th>Đơn giá</th>
+                            <th>Trạng thái kinh doanh</th><th className="text-center">Thao tác</th>
                         </tr>
                         </thead>
                         <tbody>
@@ -274,8 +324,9 @@ function MenuTab() {
                                     </Badge>
                                 </td>
                                 <td className="text-center">
-                                    <Button variant="outline-primary" size="sm" className="me-2"><FaEdit /></Button>
-                                    <Button variant="outline-danger" size="sm"><FaTrash /></Button>
+                                    <Button variant="outline-primary" size="sm" className="me-2"
+                                            onClick={() => { setEditingItem(mon); setShowModal(true); }}><FaEdit /></Button>
+                                    <Button variant="outline-danger" size="sm" onClick={() => handleDelete(mon.maMon)}><FaTrash /></Button>
                                 </td>
                             </tr>
                         ))}
@@ -283,6 +334,85 @@ function MenuTab() {
                     </Table>
                 )}
             </Card>
+
+            <MenuModal show={showModal} onHide={() => setShowModal(false)} onSave={handleSave} editingItem={editingItem} nhomList={nhomList} />
+        </div>
+    );
+}
+
+
+function TableTab() {
+    const [tableList, setTableList] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [showModal, setShowModal] = useState(false);
+    const [editingTable, setEditingTable] = useState(null);
+
+    useEffect(() => { loadTables(); }, []);
+
+    const loadTables = async () => {
+        setLoading(true);
+        try { setTableList(await fetchAllTables()); }
+        catch (error) { console.error("Lỗi tải bàn ăn:", error); }
+        finally { setLoading(false); }
+    };
+
+    const handleSave = async (formData, id) => {
+        if (id) await updateTable(id, formData);
+        else await createTable(formData);
+        await loadTables();
+    };
+
+    const handleDelete = async (id) => {
+        if (!window.confirm('Xác nhận xóa bàn này?')) return;
+        try { await deleteTable(id); await loadTables(); }
+        catch { alert('Không thể xóa bàn này (có thể đang có đơn hàng liên kết)'); }
+    };
+
+    return (
+        <div>
+            <div className="d-flex justify-content-between align-items-center mb-4">
+                <h2 className="fw-bold" style={{ color: '#1E3923' }}>Quản lý bàn ăn</h2>
+                <Button variant="success" className="d-flex align-items-center gap-2"
+                        style={{ backgroundColor: '#1E3923', borderColor: '#1E3923' }}
+                        onClick={() => { setEditingTable(null); setShowModal(true); }}>
+                    <FaPlus /> Thêm bàn mới
+                </Button>
+            </div>
+
+            <Card className="shadow-sm border-0 p-3 bg-white">
+                {loading ? <div className="text-center py-4"><Spinner animation="border" /></div> : (
+                    <Table hover responsive className="align-middle">
+                        <thead>
+                        <tr>
+                            <th>Mã bàn</th><th>Sức chứa</th><th>Khu vực</th><th>Tình trạng</th>
+                            <th className="text-center">Thao tác</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {tableList.map((b) => (
+                            <tr key={b.maBan}>
+                                <td className="fw-bold">{b.maBan}</td>
+                                <td>{b.capacity} người</td>
+                                <td>{b.floor}</td>
+                                <td>
+                                    <Badge bg={b.trangThai === 'Trống' ? 'success' : b.trangThai === 'Đang phục vụ' ? 'warning' : 'info'}
+                                           text={b.trangThai === 'Trống' ? 'white' : 'dark'}>
+                                        {b.trangThai}
+                                    </Badge>
+                                </td>
+                                <td className="text-center">
+                                    <Button variant="outline-primary" size="sm" className="me-2"
+                                            onClick={() => { setEditingTable(b); setShowModal(true); }}><FaEdit /></Button>
+                                    <Button variant="outline-danger" size="sm" onClick={() => handleDelete(b.maBan)}><FaTrash /></Button>
+                                </td>
+                            </tr>
+                        ))}
+                        </tbody>
+                    </Table>
+                )}
+            </Card>
+
+            <TableModal show={showModal} onHide={() => setShowModal(false)} onSave={handleSave} editingTable={editingTable} />
         </div>
     );
 }

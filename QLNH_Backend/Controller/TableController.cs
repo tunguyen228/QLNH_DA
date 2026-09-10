@@ -1,7 +1,11 @@
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using QLNH_Backend.DTO;
+using QLNH_Backend.BLL;
 using QLNH_Backend.DAL;
+using QLNH_Backend.DTO;
 
 namespace QLNH_Backend.Controllers
 {
@@ -9,10 +13,12 @@ namespace QLNH_Backend.Controllers
     [Route("api/waiter/[controller]")]
     public class TableController : ControllerBase
     {
+        private readonly ITableService _service;
         private readonly AppDbContext _context;
 
-        public TableController(AppDbContext context)
+        public TableController(ITableService service, AppDbContext context)
         {
+            _service = service;
             _context = context;
         }
 
@@ -23,8 +29,10 @@ namespace QLNH_Backend.Controllers
                 .OrderBy(b => b.MaBan)
                 .ToListAsync();
 
-            var response = new TableMapResponse();
-            response.Areas = new List<AreaDTO>();
+            var response = new TableMapResponse
+            {
+                Areas = new List<AreaDTO>()
+            };
 
             int total = 0, inUse = 0, available = 0;
 
@@ -33,12 +41,12 @@ namespace QLNH_Backend.Controllers
                 total++;
                 TableStatus mappedStatus = TableStatus.Empty;
 
-                if (b.TrangThai == "Đang sử dụng" || b.TrangThai == "Có khách") 
+                if (b.TrangThai == "Đang sử dụng" || b.TrangThai == "Có khách")
                 {
                     mappedStatus = TableStatus.InUse;
                     inUse++;
                 }
-                else 
+                else
                 {
                     available++;
                 }
@@ -66,19 +74,35 @@ namespace QLNH_Backend.Controllers
 
             return Ok(response);
         }
+
         [HttpGet("active")]
         public async Task<IActionResult> GetActiveTables()
         {
             var tables = await _context.BanAns
-                .Where(b => b.TrangThai == "Đang sử dụng") // Kiểm tra kỹ string trạng thái này trong DB
-                .Select(b => new 
+                .Where(b => b.TrangThai == "Đang sử dụng")
+                .Select(b => new
                 {
-                    id = b.MaBan,      
-                    name = "Bàn " + b.MaBan   
+                    id = b.MaBan,
+                    name = "Bàn " + b.MaBan
                 })
                 .ToListAsync();
 
             return Ok(tables);
         }
+
+        [HttpPost]
+        public async Task<IActionResult> Create([FromBody] TableRequestDTO dto)
+        {
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+            return Ok(await _service.CreateAsync(dto));
+        }
+
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Update(int id, [FromBody] TableRequestDTO dto) =>
+            await _service.UpdateAsync(id, dto) ? NoContent() : NotFound();
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Delete(int id) =>
+            await _service.DeleteAsync(id) ? NoContent() : NotFound();
     }
 }

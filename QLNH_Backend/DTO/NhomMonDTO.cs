@@ -1,7 +1,17 @@
-namespace DefaultNamespace;
+using System;
+using System.ComponentModel.DataAnnotations;
 
-public class NhomMonDTO
+namespace QLNH_Backend.DTO
 {
-    public int MaNhom { get; set; } 
-    public string TenNhom { get; set; } = string.Empty;
+    public class NhomMonDTO
+    {
+        public int MaNhom { get; set; } 
+        public string TenNhom { get; set; } = string.Empty;
+    }
+
+    public class NhomMonRequestDTO
+    {
+        [Required] public string TenNhom { get; set; }
+    }
 }
+

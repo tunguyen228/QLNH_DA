@@ -5,6 +5,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { fetchAllTables } from '../services/tableService';
 import { fetchCategories, getMenuItems, sendOrderToKitchen, sendQRClientOrder } from '../services/menuService';
 import '../CSS/Menu.css';
+//import NotificationProvider from '../contexts/NotificationProvider';
 
 const normalizeCategory = (raw) => ({
     id: raw.maNhom ?? raw.MaNhom ?? raw.id ?? raw.Id,
@@ -72,11 +73,11 @@ const Menu = () => {
         const currentTableToOrder = tableId || selectedTable || localStorage.getItem('current_qr_table');
 
         if (cart.length === 0) {
-            alert("Giỏ hàng đang trống!");
+            addToast("Giỏ hàng đang trống!");
             return;
         }
         if (!currentTableToOrder) {
-            alert("Không xác định được số bàn! Vui lòng quét lại mã QR.");
+            addToast("Vui lòng chọn bàn ăn.");
             return;
         }
         if (isSubmitting) return;
@@ -87,7 +88,7 @@ const Menu = () => {
                 // NHÂN VIÊN: gửi qua endpoint nội bộ, cần maNv
                 const storedMaNv = localStorage.getItem('maNv');
                 if (!storedMaNv) {
-                    alert("Lỗi phiên đăng nhập! Vui lòng đăng nhập lại để tiếp tục.");
+                    addToast("Lỗi phiên đăng nhập! Vui lòng đăng nhập lại để tiếp tục.");
                     setIsSubmitting(false);
                     return;
                 }
@@ -185,6 +186,10 @@ const Menu = () => {
         );
     };
 
+    const updateNote = (id, text) => {
+        setCart(prev => prev.map(c => c.id === id ? { ...c, note: text } : c));
+    };
+
     const subTotal = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
     const totalQty = cart.reduce((sum, item) => sum + item.qty, 0);
 
@@ -239,21 +244,26 @@ const Menu = () => {
                                     {formatVND(cartItem.price)} / phần
                                 </div>
 
-                                <div className="d-flex justify-content-between align-items-end">
-                                    <div className="w-50">
-                                        {cartItem.note && (
-                                            <div className="text-danger fst-italic" style={{ fontSize: '0.75rem' }}>
-                                                Ghi chú: {cartItem.note}
-                                            </div>
-                                        )}
+                                <div className="d-flex justify-content-between align-items-end mt-2">
+                                    {/* Ô nhập ghi chú */}
+                                    <div className="pe-2" style={{ flex: 1 }}>
+                                        <Form.Control
+                                            size="sm"
+                                            type="text"
+                                            placeholder="Ghi chú (VD: ít cay, không hành...)"
+                                            value={cartItem.note || ''}
+                                            onChange={(e) => updateNote(cartItem.id, e.target.value)}
+                                            style={{ fontSize: '0.75rem', padding: '0.35rem 0.5rem', borderRadius: '4px' }}
+                                        />
                                     </div>
 
-                                    <div className="qty-control d-flex align-items-center">
+                                    {/* Khu vực tăng giảm số lượng */}
+                                    <div className="qty-control d-flex align-items-center flex-shrink-0">
                                         <button
                                             type="button"
                                             className="btn bg-white d-flex align-items-center justify-content-center p-0"
                                             style={{
-                                                width: '20px',
+                                                width: '24px',
                                                 height: '28px',
                                                 border: '1px solid #777',
                                                 borderRadius: '4px',
@@ -265,14 +275,14 @@ const Menu = () => {
                                         >
                                             −
                                         </button>
-                                        <span className="qty-value fw-medium" style={{ minWidth: '20px', textAlign: 'center' }}>
+                                        <span className="qty-value fw-medium" style={{ minWidth: '24px', textAlign: 'center', fontSize: '0.9rem' }}>
                                             {cartItem.qty}
                                         </span>
                                         <button
                                             type="button"
                                             className="btn bg-white d-flex align-items-center justify-content-center p-0"
                                             style={{
-                                                width: '20px',
+                                                width: '24px',
                                                 height: '28px',
                                                 border: '1px solid #777',
                                                 borderRadius: '4px',
@@ -413,7 +423,7 @@ const Menu = () => {
                                                                 type="button"
                                                                 className="btn bg-white d-flex align-items-center justify-content-center p-0"
                                                                 style={{
-                                                                    width: '20px',
+                                                                    width: '24px',
                                                                     height: '28px',
                                                                     border: '1px solid #777',
                                                                     borderRadius: '4px',
@@ -431,7 +441,7 @@ const Menu = () => {
                                                                     type="button"
                                                                     className="btn bg-white d-flex align-items-center justify-content-center p-0"
                                                                     style={{
-                                                                        width: '20px',
+                                                                        width: '24px',
                                                                         height: '28px',
                                                                         border: '1px solid #777',
                                                                         borderRadius: '4px',
@@ -443,14 +453,14 @@ const Menu = () => {
                                                                 >
                                                                     −
                                                                 </button>
-                                                                <span className="qty-value fw-medium" style={{ minWidth: '20px', textAlign: 'center' }}>
+                                                                <span className="qty-value fw-medium" style={{ minWidth: '24px', textAlign: 'center', fontSize: '0.9rem' }}>
                                                                     {qtyInCart}
                                                                 </span>
                                                                 <button
                                                                     type="button"
                                                                     className="btn bg-white d-flex align-items-center justify-content-center p-0"
                                                                     style={{
-                                                                        width: '20px',
+                                                                        width: '24px',
                                                                         height: '28px',
                                                                         border: '1px solid #777',
                                                                         borderRadius: '4px',

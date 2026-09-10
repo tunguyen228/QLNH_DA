@@ -12,6 +12,7 @@ import GiaoDienThanhToan from './pages/GiaoDienThanhToan';
 import { NotificationProvider } from './contexts/NotificationProvider.jsx';
 import TransactionHistory from "./pages/TransactionHistory.jsx";
 import TableQRGenerator from './pages/TableQRGenerator';
+import TableModal from './components/TableModal'; // Hoặc đường dẫn tương ứng
 
 // Component bảo vệ Route: Kiểm tra cả Token (Đã đăng nhập) và Role (Có quyền)
 const ProtectedRoute = ({ allowedRoles, children }) => {
@@ -70,7 +71,8 @@ function App() {
                     } />
 
                     {/* NHÓM QUYỀN: THU NGÂN */}
-                    <Route element={<ProtectedRoute allowedRoles={['Thu ngân']} />}>
+                    <Route element={
+                        <ProtectedRoute allowedRoles={['Thu ngân']} />}>
                         <Route path="/thu-ngan" element={<Navigate to="/thu-ngan/thanh-toan" replace />} />
                         <Route path="/thu-ngan/thanh-toan" element={<GiaoDienThanhToan />} />
                         <Route path="/thu-ngan/lich-su" element={<TransactionHistory />} />
@@ -81,8 +83,9 @@ function App() {
                         <ProtectedRoute allowedRoles={['Quản lý']}>
                             <QuanLy />
                         </ProtectedRoute>
-                    } />
-
+                    }>
+                        <Route path="ban-an" element={<TableModal />} />
+                    </Route>
                 </Routes>
             </NotificationProvider>
         </ToastProvider>

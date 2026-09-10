@@ -4,8 +4,12 @@ import { Link, useLocation } from 'react-router-dom';
 
 const SidebarNavItem = ({ to, icon, label, showDot = false }) => {
     const location = useLocation();
-    // Dùng so sánh chính xác pathname thay vì includes() để không bị active nhầm
-    const isActive = location.pathname === to;
+
+    // Đã sửa: Cho phép active khi url kết thúc bằng 'to' (VD: /phuc-vu/menu) 
+    // HOẶC chứa '/to/' khi có thêm ID phía sau (VD: /phuc-vu/menu/5)
+    const isActive = location.pathname === to ||
+        location.pathname.endsWith(`/${to}`) ||
+        location.pathname.includes(`/${to}/`);
 
     return (
         <Nav.Link
