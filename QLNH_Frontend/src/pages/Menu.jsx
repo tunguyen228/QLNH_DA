@@ -19,8 +19,6 @@ const normalizeMenuItem = (raw) => ({
     categoryName: raw.tenNhom ?? raw.TenNhom ?? raw.categoryName ?? raw.CategoryName ?? '',
     image: raw.hinhAnh ?? raw.HinhAnh ?? raw.image ?? raw.Image ?? raw.imageUrl ?? null,
     isDangKinhDoanh: Boolean(raw.dangKinhDoanh ?? raw.DangKinhDoanh ?? true),
-
-    // 👉 Tạm hết hàng hay còn món (Lấy từ trường tamHet)
     isTamHet: Boolean(raw.tamHet ?? raw.TamHet ?? false)
 });
 
@@ -113,7 +111,7 @@ const Menu = () => {
             const rawItems = await getMenuItems();
             const normalizedItems = rawItems
                 .map(normalizeMenuItem)
-                .filter((item) => item.isDangKinhDoanh); // ẩn hẳn món đã ngừng kinh doanh
+                .filter((item) => item.isDangKinhDoanh);
             setAllMenuItems(normalizedItems);
         };
         loadInitialData();
@@ -407,22 +405,51 @@ const Menu = () => {
                                                         <i className="bi bi-image fs-1"></i>
                                                     )}
 
-                                                    {item.isTamHet ? (
-                                                        <span className="badge bg-secondary text-white py-1 px-2" style={{ fontSize: '0.75rem' }}>
-                                                            Hết hàng
-                                                        </span>
-                                                    ) : qtyInCart === 0 ? (
-                                                        <button
-                                                            type="button"
-                                                            className="btn bg-white d-flex align-items-center justify-content-center p-0"
-                                                            style={{ width: '24px', height: '28px', border: '1px solid #777', borderRadius: '4px', color: '#000', fontWeight: '500' }}
-                                                            onClick={() => addToCart(item)}
-                                                            aria-label="Thêm vào giỏ"
+                                                    {/* Nhãn hiển thị Tạm hết trực tiếp trên ảnh */}
+                                                    {item.isTamHet && (
+                                                        <Badge
+                                                            bg="dark"
+                                                            className="position-absolute top-50 start-50 translate-middle px-3 py-2 fs-6 shadow-sm"
+                                                            style={{ opacity: 0.9, letterSpacing: '0.5px' }}
                                                         >
-                                                            +
-                                                        </button>
-                                                    ) : (
-                                                        <div className="qty-control d-flex align-items-center">
+                                                            TẠM HẾT
+                                                        </Badge>
+                                                    )}
+                                                </div>
+
+                                                <Card.Body className="d-flex flex-column p-3">
+                                                    <Card.Title className="fw-bold mb-1" style={{ fontSize: '14px', color: item.isTamHet ? '#888' : '#212529' }}>
+                                                        {item.name}
+                                                    </Card.Title>
+
+                                                    <div className="d-flex justify-content-between align-items-center mt-auto pt-2">
+                                                        <span className="fw-bold" style={{ fontSize: '14px', color: item.isTamHet ? '#999' : '#1E3923' }}>
+                                                            {formatVND(item.price)}
+                                                        </span>
+
+                                                        {item.isTamHet ? (
+                                                            <span className="badge bg-secondary text-white py-1 px-2" style={{ fontSize: '0.75rem' }}>
+                                                                Hết hàng
+                                                            </span>
+                                                        ) : qtyInCart === 0 ? (
+                                                            <button
+                                                                type="button"
+                                                                className="btn bg-white d-flex align-items-center justify-content-center p-0"
+                                                                style={{
+                                                                    width: '24px',
+                                                                    height: '28px',
+                                                                    border: '1px solid #777',
+                                                                    borderRadius: '4px',
+                                                                    color: '#000',
+                                                                    fontWeight: '500'
+                                                                }}
+                                                                onClick={() => addToCart(item)}
+                                                                aria-label="Thêm vào giỏ"
+                                                            >
+                                                                +
+                                                            </button>
+                                                        ) : (
+                                                            <div className="qty-control d-flex align-items-center">
                                                                 <button
                                                                     type="button"
                                                                     className="btn bg-white d-flex align-items-center justify-content-center p-0"

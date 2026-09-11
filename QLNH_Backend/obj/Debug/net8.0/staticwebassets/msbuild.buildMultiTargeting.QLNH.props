@@ -1,3 +1,3 @@
 ﻿<Project>
-    <Import Project="../build/QLNH.props"/>
+  <Import Project="../build/QLNH.props" />
 </Project>
