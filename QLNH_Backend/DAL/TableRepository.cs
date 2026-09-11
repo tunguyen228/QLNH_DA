@@ -6,15 +6,6 @@ using QLNH_Backend.Models;
 
 namespace QLNH_Backend.DAL
 {
-    public interface ITableRepository
-    {
-        Task<List<BanAn>> GetAllAsync();
-        Task<BanAn?> GetByIdAsync(int id);
-        Task AddAsync(BanAn table);
-        Task<bool> UpdateAsync(BanAn table);
-        Task<bool> DeleteAsync(int id);
-    }
-
     public class TableRepository : ITableRepository
     {
         private readonly AppDbContext _context;

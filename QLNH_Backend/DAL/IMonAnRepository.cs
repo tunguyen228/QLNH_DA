@@ -5,12 +5,13 @@ using QLNH_Backend.DAL; // hoặc namespace chứa AppDbContext / QLNHContext
 
 namespace QLNH_Backend.DAL
 {
-    public interface INhanVienRepository
+    // File: DAL/Repositories/MonAnRepository.cs
+    public interface IMonAnRepository
     {
-        Task<List<NhanVien>> GetAllAsync();
-        Task<NhanVien> GetByIdAsync(int id);
-        Task AddAsync(NhanVien nv);
-        Task<bool> UpdateAsync(NhanVien nv);
+        Task<List<MonAn>> GetAllAsync();
+        Task<MonAn> GetByIdAsync(int id);
+        Task AddAsync(MonAn m);
+        Task<bool> UpdateAsync(MonAn m);
         Task<bool> DeleteAsync(int id);
     }
 }

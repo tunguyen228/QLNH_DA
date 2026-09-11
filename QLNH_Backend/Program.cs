@@ -29,6 +29,8 @@ builder.Services.AddScoped<INhanVienService, NhanVienService>();
 builder.Services.AddScoped<ITableRepository, TableRepository>();
 builder.Services.AddScoped<ITableService, TableService>();
 builder.Services.AddScoped<IBepService, BepService>();
+builder.Services.AddScoped<IMonAnService, MonAnService>();
+builder.Services.AddScoped<IMonAnRepository, MonAnRepository>();
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -55,28 +57,32 @@ builder.Services.AddSignalR();
 
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowReactApp",
-        policy =>
-        {
-            policy.WithOrigins("http://localhost:5173", "http://192.168.1.126:5173")
-                  .AllowAnyHeader()
-                  .AllowAnyMethod()
-                  .AllowCredentials(); // ---> BẮT BUỘC PHẢI CÓ DÒNG NÀY CHO SIGNALR KHI DÙNG CORS
-        });
+    options.AddPolicy("AllowReactApp", policy =>
+    {
+        policy.SetIsOriginAllowed(origin => true) // Cho phép mọi IP LAN gọi vào
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+            .AllowCredentials();
+    });
 });
 
 var app = builder.Build();
 
-app.UseSwagger();
-app.UseSwaggerUI();
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
 
-app.UseRouting();
+// 1. Đặt UseCors ngay đầu pipeline (trước Auth và Endpoints)
 app.UseCors("AllowReactApp");
+
+// 2. Authentication & Authorization
 app.UseAuthentication(); 
 app.UseAuthorization();
-app.MapControllers();
 
-// ---> THÊM DÒNG NÀY ĐỂ MỞ ENDPOINT CHO FE KẾT NỐI HUB
+// 3. Map Endpoints
+app.MapControllers();
 app.MapHub<NotificationHub>("/notificationHub"); 
 
 app.Run();

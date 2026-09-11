@@ -1,6 +1,7 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'http://localhost:5000/api/kitchen';
+const host = window.location.hostname;
+const API_BASE_URL = `http://${host}:5000/api/kitchen`;
 
 export const getKitchenStaff = async () => {
     try {

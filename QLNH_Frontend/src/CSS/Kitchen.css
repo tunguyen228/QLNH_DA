@@ -59,6 +59,7 @@
     background-color: transparent;
     transition: background-color 0.15s ease, color 0.15s ease;
 }
+
 .kitchen-wrapper .btn-outline-danger:hover,
 .kitchen-wrapper .btn-outline-danger:active {
     background-color: var(--kw-rust) !important;
@@ -77,13 +78,16 @@
     scrollbar-width: thin;
     scrollbar-color: var(--kw-caramel) transparent;
 }
+
 .kitchen-wrapper .kitchen-card-panel .overflow-auto::-webkit-scrollbar {
     width: 6px;
 }
+
 .kitchen-wrapper .kitchen-card-panel .overflow-auto::-webkit-scrollbar-thumb {
     background: var(--kw-line);
     border-radius: 999px;
 }
+
 .kitchen-wrapper .kitchen-card-panel .overflow-auto::-webkit-scrollbar-thumb:hover {
     background: var(--kw-caramel);
 }
@@ -154,6 +158,7 @@
     background-color: transparent;
     transition: background-color 0.15s ease, color 0.15s ease;
 }
+
 .kitchen-wrapper .btn-outline-success:hover,
 .kitchen-wrapper .btn-outline-success:active {
     background-color: var(--kw-forest) !important;
@@ -169,6 +174,7 @@
     box-shadow: 0 4px 12px rgba(193, 80, 46, 0.25);
     transition: background-color 0.15s ease;
 }
+
 .kitchen-wrapper .btn-success:hover,
 .kitchen-wrapper .btn-success:active {
     background-color: var(--kw-rust-dark) !important;
@@ -183,6 +189,7 @@
     background-color: transparent;
     transition: background-color 0.15s ease;
 }
+
 .kitchen-wrapper .btn-outline-warning:hover,
 .kitchen-wrapper .btn-outline-warning:active {
     background-color: var(--kw-caramel-tint) !important;
@@ -198,12 +205,14 @@
     background-color: transparent;
     transition: background-color 0.15s ease;
 }
+
 .kitchen-wrapper .btn-outline-secondary:hover,
 .kitchen-wrapper .btn-outline-secondary:active {
     background-color: var(--kw-line) !important;
     border-color: var(--kw-line) !important;
     color: var(--kw-ink) !important;
 }
+
 .kitchen-wrapper .btn:focus-visible {
     outline: 2px solid var(--kw-forest);
     outline-offset: 2px;
@@ -214,6 +223,7 @@
     .kitchen-wrapper .btn {
         transition: none !important;
     }
+
     .kitchen-wrapper .card:hover {
         transform: none;
     }

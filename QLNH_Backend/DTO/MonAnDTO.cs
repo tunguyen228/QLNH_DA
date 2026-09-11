@@ -11,6 +11,7 @@ namespace QLNH_Backend.DTO
         public decimal GiaTien { get; set; }
         public string HinhAnh { get; set; }
         public bool DangKinhDoanh { get; set; }
+        public bool TamHet { get; set; }
     
         public int MaNhom { get; set; }
         public string TenNhom { get; set; } = string.Empty;

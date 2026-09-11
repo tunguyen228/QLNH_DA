@@ -5,7 +5,6 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { fetchAllTables } from '../services/tableService';
 import { fetchCategories, getMenuItems, sendOrderToKitchen, sendQRClientOrder } from '../services/menuService';
 import '../CSS/Menu.css';
-//import NotificationProvider from '../contexts/NotificationProvider';
 
 const normalizeCategory = (raw) => ({
     id: raw.maNhom ?? raw.MaNhom ?? raw.id ?? raw.Id,
@@ -19,9 +18,12 @@ const normalizeMenuItem = (raw) => ({
     categoryId: raw.maNhom ?? raw.MaNhom ?? raw.categoryId ?? raw.CategoryId,
     categoryName: raw.tenNhom ?? raw.TenNhom ?? raw.categoryName ?? raw.CategoryName ?? '',
     image: raw.hinhAnh ?? raw.HinhAnh ?? raw.image ?? raw.Image ?? raw.imageUrl ?? null,
+    isDangKinhDoanh: Boolean(raw.dangKinhDoanh ?? raw.DangKinhDoanh ?? true),
+
+    // 👉 Tạm hết hàng hay còn món (Lấy từ trường tamHet)
+    isTamHet: Boolean(raw.tamHet ?? raw.TamHet ?? false)
 });
 
-// Bỏ dấu tiếng Việt để tìm kiếm không phân biệt dấu (vd: gõ "ga" vẫn ra "Gà nướng")
 const removeVietnameseTones = (str = '') => {
     return str
         .normalize('NFD')
@@ -44,20 +46,17 @@ const Menu = () => {
     const [cart, setCart] = useState([]);
     const [tables, setTables] = useState([]);
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [showCart, setShowCart] = useState(false); // Điều khiển Offcanvas giỏ hàng trên mobile
+    const [showCart, setShowCart] = useState(false);
 
-    // Phân biệt nhân viên (đã đăng nhập, có token) và khách quét QR (không có token)
     const isQRCodeMode = Boolean(tableId);
     const isStaff = !isQRCodeMode && !!localStorage.getItem('token');
 
-    // Khởi tạo selectedTable ưu tiên từ URL params (tableId), nếu không có thì lấy localStorage hoặc rỗng
     const [selectedTable, setSelectedTable] = useState(() => {
         if (tableId) return String(tableId);
         const savedQrTable = localStorage.getItem('current_qr_table');
         return savedQrTable ? savedQrTable : '';
     });
 
-    // Đồng bộ lại selectedTable ngay khi tableId thay đổi từ URL
     useEffect(() => {
         if (tableId) {
             const tIdStr = String(tableId);
@@ -69,7 +68,6 @@ const Menu = () => {
     }, [tableId, isStaff]);
 
     const handleSendOrder = async () => {
-        // Lấy lại bàn chuẩn xác lần cuối trước khi gửi
         const currentTableToOrder = tableId || selectedTable || localStorage.getItem('current_qr_table');
 
         if (cart.length === 0) {
@@ -85,7 +83,6 @@ const Menu = () => {
 
         try {
             if (isStaff) {
-                // NHÂN VIÊN: gửi qua endpoint nội bộ, cần maNv
                 const storedMaNv = localStorage.getItem('maNv');
                 if (!storedMaNv) {
                     addToast("Lỗi phiên đăng nhập! Vui lòng đăng nhập lại để tiếp tục.");
@@ -95,7 +92,6 @@ const Menu = () => {
                 const currentMaNv = parseInt(storedMaNv);
                 await sendOrderToKitchen(currentTableToOrder, currentMaNv, cart);
             } else {
-                // KHÁCH QUÉT QR: gửi qua endpoint công khai, không cần đăng nhập
                 await sendQRClientOrder(currentTableToOrder, cart);
             }
 
@@ -115,13 +111,14 @@ const Menu = () => {
             const cats = await fetchCategories();
             setCategories(cats.map(normalizeCategory));
             const rawItems = await getMenuItems();
-            const normalizedItems = rawItems.map(normalizeMenuItem);
+            const normalizedItems = rawItems
+                .map(normalizeMenuItem)
+                .filter((item) => item.isDangKinhDoanh); // ẩn hẳn món đã ngừng kinh doanh
             setAllMenuItems(normalizedItems);
         };
         loadInitialData();
     }, []);
 
-    // Lọc theo danh mục và/hoặc từ khóa tìm kiếm
     useEffect(() => {
         let filtered = allMenuItems;
 
@@ -138,7 +135,6 @@ const Menu = () => {
     }, [activeCategory, allMenuItems, searchTerm]);
 
     useEffect(() => {
-        // Chỉ nhân viên mới cần tải danh sách toàn bộ bàn để đổi bàn.
         if (!isStaff) return;
         const loadTables = async () => {
             const list = await fetchAllTables();
@@ -166,6 +162,10 @@ const Menu = () => {
     const getQtyInCart = (id) => cart.find(c => c.id === id)?.qty ?? 0;
 
     const addToCart = (item) => {
+        if (item.isTamHet) {
+            addToast("Món này hiện đang tạm hết!", "warning");
+            return;
+        }
         setCart(prev => {
             const exists = prev.find(c => c.id === item.id);
             if (exists) {
@@ -175,8 +175,9 @@ const Menu = () => {
         });
     };
 
-    const increaseQty = (id) => {
-        setCart(prev => prev.map(c => c.id === id ? { ...c, qty: c.qty + 1 } : c));
+    const increaseQty = (item) => {
+        if (item.isTamHet) return;
+        setCart(prev => prev.map(c => c.id === item.id ? { ...c, qty: c.qty + 1 } : c));
     };
 
     const decreaseQty = (id) => {
@@ -193,14 +194,11 @@ const Menu = () => {
     const subTotal = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
     const totalQty = cart.reduce((sum, item) => sum + item.qty, 0);
 
-    // Xác định số bàn hiển thị trên giao diện (ưu tiên tableId từ URL -> selectedTable -> localStorage)
     const displayTableNumber = tableId || selectedTable || localStorage.getItem('current_qr_table') || '';
 
-    // Nội dung giỏ hàng dùng chung cho panel desktop và Offcanvas mobile
     const renderCartPanel = () => (
         <>
             {isStaff ? (
-                // NHÂN VIÊN: hiện ô chọn bàn để đổi bàn linh hoạt
                 <div className="d-flex align-items-center gap-2 mb-3">
                     <Form.Select
                         size="sm"
@@ -216,7 +214,6 @@ const Menu = () => {
                     </Form.Select>
                 </div>
             ) : (
-                // KHÁCH QUÉT QR: ẩn ô chọn bàn, hiển thị tên/số bàn cố định rõ ràng
                 <div className="mb-3 p-2 bg-light rounded text-center">
                     <span className="fw-bold text-success" style={{ fontSize: '1rem' }}>
                         <i className="bi bi-shop me-1"></i> Bàn số: {displayTableNumber}
@@ -245,7 +242,6 @@ const Menu = () => {
                                 </div>
 
                                 <div className="d-flex justify-content-between align-items-end mt-2">
-                                    {/* Ô nhập ghi chú */}
                                     <div className="pe-2" style={{ flex: 1 }}>
                                         <Form.Control
                                             size="sm"
@@ -257,7 +253,6 @@ const Menu = () => {
                                         />
                                     </div>
 
-                                    {/* Khu vực tăng giảm số lượng */}
                                     <div className="qty-control d-flex align-items-center flex-shrink-0">
                                         <button
                                             type="button"
@@ -289,7 +284,7 @@ const Menu = () => {
                                                 color: '#000',
                                                 fontWeight: '500'
                                             }}
-                                            onClick={() => increaseQty(cartItem.id)}
+                                            onClick={() => increaseQty(cartItem)}
                                             aria-label="Tăng số lượng"
                                         >
                                             +
@@ -317,7 +312,7 @@ const Menu = () => {
                     onClick={handleSendOrder}
                     disabled={isSubmitting || cart.length === 0}
                     style={{
-                        backgroundColor: '#2b5c38', /* Xanh lá rêu */
+                        backgroundColor: '#2b5c38',
                         color: '#ffffff',
                         borderRadius: '12px'
                     }}
@@ -396,47 +391,38 @@ const Menu = () => {
                                     const qtyInCart = getQtyInCart(item.id);
                                     return (
                                         <Col sm={6} md={6} lg={4} xl={3} key={item.id}>
-                                            <Card className="h-100 shadow-sm border-0 rounded-4 overflow-hidden">
+                                            <Card className={`h-100 shadow-sm border-0 rounded-4 overflow-hidden position-relative ${item.isTamHet ? 'bg-light' : ''}`}>
                                                 <div className="position-relative food-img-placeholder">
                                                     {item.image ? (
                                                         <img
                                                             src={item.image}
                                                             alt={item.name}
                                                             className="w-100 h-100"
-                                                            style={{ objectFit: 'cover' }}
+                                                            style={{
+                                                                objectFit: 'cover',
+                                                                filter: item.isTamHet ? 'grayscale(85%) opacity(0.6)' : 'none'
+                                                            }}
                                                         />
                                                     ) : (
                                                         <i className="bi bi-image fs-1"></i>
                                                     )}
-                                                </div>
-                                                <Card.Body className="d-flex flex-column p-3">
-                                                    <Card.Title className="fw-bold mb-1" style={{ fontSize: '14px' }}>
-                                                        {item.name}
-                                                    </Card.Title>
-                                                    <div className="d-flex justify-content-between align-items-center mt-auto">
-                                                        <span className="fw-bold" style={{ fontSize: '14px' }}>
-                                                            {formatVND(item.price)}
-                                                        </span>
 
-                                                        {qtyInCart === 0 ? (
-                                                            <button
-                                                                type="button"
-                                                                className="btn bg-white d-flex align-items-center justify-content-center p-0"
-                                                                style={{
-                                                                    width: '24px',
-                                                                    height: '28px',
-                                                                    border: '1px solid #777',
-                                                                    borderRadius: '4px',
-                                                                    color: '#000',
-                                                                    fontWeight: '500'
-                                                                }}
-                                                                onClick={() => addToCart(item)}
-                                                                aria-label="Thêm vào giỏ"
-                                                            >
-                                                                +
-                                                            </button>
-                                                        ) : (
-                                                            <div className="qty-control d-flex align-items-center">
+                                                    {item.isTamHet ? (
+                                                        <span className="badge bg-secondary text-white py-1 px-2" style={{ fontSize: '0.75rem' }}>
+                                                            Hết hàng
+                                                        </span>
+                                                    ) : qtyInCart === 0 ? (
+                                                        <button
+                                                            type="button"
+                                                            className="btn bg-white d-flex align-items-center justify-content-center p-0"
+                                                            style={{ width: '24px', height: '28px', border: '1px solid #777', borderRadius: '4px', color: '#000', fontWeight: '500' }}
+                                                            onClick={() => addToCart(item)}
+                                                            aria-label="Thêm vào giỏ"
+                                                        >
+                                                            +
+                                                        </button>
+                                                    ) : (
+                                                        <div className="qty-control d-flex align-items-center">
                                                                 <button
                                                                     type="button"
                                                                     className="btn bg-white d-flex align-items-center justify-content-center p-0"
@@ -467,7 +453,7 @@ const Menu = () => {
                                                                         color: '#000',
                                                                         fontWeight: '500'
                                                                     }}
-                                                                    onClick={() => increaseQty(item.id)}
+                                                                    onClick={() => increaseQty(item)}
                                                                     aria-label="Tăng số lượng"
                                                                 >
                                                                     +
@@ -484,7 +470,7 @@ const Menu = () => {
                         )}
                     </Col>
 
-                    {/* Panel giỏ hàng - chỉ hiện từ lg trở lên, mobile dùng Offcanvas bên dưới */}
+                    {/* Panel giỏ hàng Desktop */}
                     <Col lg={4} xl={4} className="h-100 pb-4 d-none d-lg-block">
                         <Card className="shadow-sm border-0 rounded-4 h-100 bg-white d-flex flex-column">
                             <Card.Body className="d-flex flex-column p-3 overflow-hidden">
@@ -495,7 +481,7 @@ const Menu = () => {
                 </Row>
             </div>
 
-            {/* Thanh giỏ hàng nổi cố định - chỉ hiện dưới lg (mobile) */}
+            {/* Thanh giỏ hàng Mobile */}
             <div
                 className="d-lg-none cart-floating-bar"
                 onClick={() => setShowCart(true)}
@@ -516,7 +502,7 @@ const Menu = () => {
                 </div>
             </div>
 
-            {/* Offcanvas trượt từ dưới lên chứa giỏ hàng đầy đủ - mobile */}
+            {/* Offcanvas Giỏ hàng Mobile */}
             <Offcanvas
                 show={showCart}
                 onHide={() => setShowCart(false)}

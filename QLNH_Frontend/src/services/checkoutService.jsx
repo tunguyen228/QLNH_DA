@@ -1,7 +1,8 @@
 import axios from 'axios';
 
+const host = window.location.hostname;
 // Thay đổi baseURL phù hợp với port chạy Backend C# của bạn
-const API_URL = 'http://localhost:5000/api';
+const API_URL = `http://${host}:5000/api`;
 
 const getCashierInfo = async (id) => {
     try {

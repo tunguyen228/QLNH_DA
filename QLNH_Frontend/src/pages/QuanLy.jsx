@@ -7,7 +7,7 @@ import TransactionHistory from './TransactionHistory';
 import StaffModal from '../components/StaffModal';
 import { getAllStaff, createStaff, updateStaff, deleteStaff } from '../services/staffService';
 import MenuModal from '../components/MenuModal';
-import { getMenuItems, createMenuItem, updateMenuItem, deleteMenuItem, getAllNhomMon } from '../services/menuService';
+import { getMenuItems, createMenuItem, updateMenuItem, deleteMenuItem, getAllNhomMon, toggleTamHet } from '../services/menuService';
 import TableModal from '../components/TableModal';
 import { fetchAllTables, createTable, updateTable, deleteTable } from '../services/tableService';
 import axios from 'axios';
@@ -26,7 +26,6 @@ export default function QuanLy() {
     return (
         <div className="d-flex" style={{ minHeight: '100vh', backgroundColor: '#fcfaf5' }}>
             <SidebarQuanLy hoTen={hoTen} onLogout={handleLogout} />
-
             <div className="flex-grow-1 p-4" style={{ overflowY: 'auto' }}>
                 <Routes>
                     <Route index element={<Navigate to="home" replace />} />
@@ -40,7 +39,6 @@ export default function QuanLy() {
     );
 }
 
-// TAB 1: Trang chủ & Thống kê (Gọi API từ DashboardController)
 function DashboardTab() {
     const [stats, setStats] = useState({
         tongDoanhThu: 0,
@@ -71,7 +69,6 @@ function DashboardTab() {
 
     return (
         <div style={{ color: '#2c3e50' }}>
-            {/* 2 THẺ THỐNG KÊ (ĐÃ XÓA GIÁ TRỊ TRUNG BÌNH & CƠ CẤU KHU VỰC) */}
             <Row className="mb-4 g-4">
                 <Col md={6}>
                     <Card className="shadow-sm border-0 p-3 h-100 bg-white" style={{ borderRadius: '12px', borderLeft: '4px solid #1E3923' }}>
@@ -97,14 +94,10 @@ function DashboardTab() {
                 </Col>
             </Row>
 
-            {/* BIỂU ĐỒ DOANH THU THEO TUẦN */}
             <Row className="mb-4">
                 <Col xs={12}>
                     <Card className="shadow-sm border-0 p-4 bg-white" style={{ borderRadius: '12px' }}>
-                        <div className="d-flex justify-content-between align-items-center mb-4">
-                            <h5 className="fw-bold mb-0" style={{ color: '#1E3923' }}>Doanh thu theo tuần</h5>
-                        </div>
-
+                        <h5 className="fw-bold mb-4" style={{ color: '#1E3923' }}>Doanh thu theo tuần</h5>
                         <div className="d-flex align-items-end justify-content-around" style={{ height: '240px', paddingBottom: '10px', borderBottom: '1px solid #eee' }}>
                             {stats.doanhThuTuan.map((item, idx) => (
                                 <div key={idx} className="d-flex flex-column align-items-center h-100 justify-content-end" style={{ width: '10%' }}>
@@ -126,20 +119,16 @@ function DashboardTab() {
                         <div className="d-flex justify-content-around text-muted pt-2" style={{ fontSize: '0.85rem' }}>
                             {stats.doanhThuTuan.map((item, idx) => (
                                 <span key={idx} style={{ width: '10%', textAlign: 'center', fontWeight: item.active ? 'bold' : 'normal', color: item.active ? '#1E3923' : '#6c757d' }}>
-                  {item.day}
-                </span>
+                                    {item.day}
+                                </span>
                             ))}
                         </div>
                     </Card>
                 </Col>
             </Row>
 
-            {/* BẢNG TOP MÓN ĂN BÁN CHẠY */}
             <Card className="shadow-sm border-0 p-4 bg-white" style={{ borderRadius: '12px' }}>
-                <div className="d-flex justify-content-between align-items-center mb-3">
-                    <h5 className="fw-bold mb-0" style={{ color: '#1E3923' }}>Top Món Ăn Bán Chạy</h5>
-                </div>
-
+                <h5 className="fw-bold mb-3" style={{ color: '#1E3923' }}>Top Món Ăn Bán Chạy</h5>
                 <Table hover responsive className="align-middle mb-0">
                     <thead>
                     <tr className="text-muted" style={{ fontSize: '0.8rem', backgroundColor: '#fcfaf5' }}>
@@ -154,10 +143,7 @@ function DashboardTab() {
                     {stats.topMonAn.map((mon) => (
                         <tr key={mon.id}>
                             <td className="text-muted fw-bold">{mon.id}</td>
-                            <td>
-                                <div className="fw-bold" style={{ color: '#1E3923' }}>{mon.name}</div>
-                                {/*<small className="text-muted">{mon.desc}</small>*/}
-                            </td>
+                            <td><div className="fw-bold" style={{ color: '#1E3923' }}>{mon.name}</div></td>
                             <td className="text-center fw-semibold">{mon.qty}</td>
                             <td className="text-end fw-bold text-success">{mon.revenue}</td>
                             <td className="text-center">
@@ -174,7 +160,6 @@ function DashboardTab() {
     );
 }
 
-// TAB 2: Quản lý nhân viên
 function StaffTab() {
     const [nhanVienList, setNhanVienList] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -291,6 +276,45 @@ function MenuTab() {
         catch { alert('Không thể xóa món ăn này'); }
     };
 
+    // 1. Đổi trạng thái KINH DOANH (true: hiện ở menu / false: ẩn hẳn khỏi menu)
+    const handleToggleDangKinhDoanh = async (mon) => {
+        const id = mon.maMon ?? mon.MaMon;
+        const currentStatus = mon.dangKinhDoanh ?? mon.DangKinhDoanh ?? false;
+        const updatedMon = {
+            ...mon,
+            dangKinhDoanh: !currentStatus,
+            DangKinhDoanh: !currentStatus
+        };
+
+        setMonAnList(prev => prev.map(item => (item.maMon ?? item.MaMon) === id ? updatedMon : item));
+
+        try {
+            await updateMenuItem(id, updatedMon);
+        } catch (error) {
+            console.error("Lỗi cập nhật kinh doanh:", error);
+            alert("Lỗi cập nhật! Vui lòng thử lại.");
+            await loadAll();
+        }
+    };
+
+    // 2. Đổi trạng thái TẠM HẾT (true: khóa nút đặt ở menu / false: đặt bình thường)
+    const handleToggleTamHet = async (mon) => {
+        const id = mon.maMon ?? mon.MaMon;
+        const currentTamHet = mon.tamHet ?? mon.TamHet ?? false;
+
+        setMonAnList(prev => prev.map(item =>
+            (item.maMon ?? item.MaMon) === id ? { ...item, tamHet: !currentTamHet, TamHet: !currentTamHet } : item
+        ));
+
+        try {
+            await toggleTamHet(id);
+        } catch (error) {
+            console.error("Lỗi cập nhật tạm hết:", error);
+            alert("Lỗi cập nhật tạm hết!");
+            await loadAll();
+        }
+    };
+
     return (
         <div>
             <div className="d-flex justify-content-between align-items-center mb-4">
@@ -307,29 +331,63 @@ function MenuTab() {
                     <Table hover responsive className="align-middle">
                         <thead>
                         <tr>
-                            <th>Mã Món</th><th>Tên món</th><th>Nhóm món</th><th>Đơn giá</th>
-                            <th>Trạng thái kinh doanh</th><th className="text-center">Thao tác</th>
+                            <th>Mã</th>
+                            <th>Tên món</th>
+                            <th>Nhóm món</th>
+                            <th>Đơn giá</th>
+                            <th className="text-center">Kinh doanh (Menu)</th>
+                            <th className="text-center">Kho hàng</th>
+                            <th className="text-center">Thao tác</th>
                         </tr>
                         </thead>
                         <tbody>
-                        {monAnList.map((mon) => (
-                            <tr key={mon.maMon}>
-                                <td>{mon.maMon}</td>
-                                <td className="fw-bold">{mon.tenMon}</td>
-                                <td>{mon.tenNhom}</td>
-                                <td>{mon.giaTien?.toLocaleString()} đ</td>
-                                <td>
-                                    <Badge bg={mon.dangKinhDoanh ? 'success' : 'danger'}>
-                                        {mon.dangKinhDoanh ? 'Đang kinh doanh' : 'Ngừng bán'}
-                                    </Badge>
-                                </td>
-                                <td className="text-center">
-                                    <Button variant="outline-primary" size="sm" className="me-2"
-                                            onClick={() => { setEditingItem(mon); setShowModal(true); }}><FaEdit /></Button>
-                                    <Button variant="outline-danger" size="sm" onClick={() => handleDelete(mon.maMon)}><FaTrash /></Button>
-                                </td>
-                            </tr>
-                        ))}
+                        {monAnList.map((mon) => {
+                            const isDangKinhDoanh = mon.dangKinhDoanh ?? mon.DangKinhDoanh ?? false;
+                            const isTamHet = mon.tamHet ?? mon.TamHet ?? false;
+                            const id = mon.maMon ?? mon.MaMon;
+
+                            return (
+                                <tr key={id} style={{ opacity: isDangKinhDoanh ? 1 : 0.65 }}>
+                                    <td>{id}</td>
+                                    <td className="fw-bold">{mon.tenMon ?? mon.TenMon}</td>
+                                    <td>{mon.tenNhom ?? mon.TenNhom}</td>
+                                    <td>{(mon.giaTien ?? mon.GiaTien)?.toLocaleString()} đ</td>
+
+                                    {/* Nút 1: Đang kinh doanh / Ngừng kinh doanh */}
+                                    <td className="text-center">
+                                        <Button
+                                            size="sm"
+                                            variant={isDangKinhDoanh ? "success" : "secondary"}
+                                            className="px-2 py-1"
+                                            onClick={() => handleToggleDangKinhDoanh(mon)}
+                                            style={{ minWidth: '130px', fontSize: '0.8rem' }}
+                                        >
+                                            {isDangKinhDoanh ? "Đang mở bán" : "Đã ngừng bán"}
+                                        </Button>
+                                    </td>
+
+                                    {/* Nút 2: Còn món / Tạm hết */}
+                                    <td className="text-center">
+                                        <Button
+                                            size="sm"
+                                            variant={isTamHet ? "danger" : "outline-success"}
+                                            className="px-2 py-1"
+                                            disabled={!isDangKinhDoanh}
+                                            onClick={() => handleToggleTamHet(mon)}
+                                            style={{ minWidth: '105px', fontSize: '0.8rem' }}
+                                        >
+                                            {isTamHet ? "✕ Tạm hết" : "✓ Còn món"}
+                                        </Button>
+                                    </td>
+
+                                    <td className="text-center">
+                                        <Button variant="outline-primary" size="sm" className="me-2"
+                                                onClick={() => { setEditingItem(mon); setShowModal(true); }}><FaEdit /></Button>
+                                        <Button variant="outline-danger" size="sm" onClick={() => handleDelete(id)}><FaTrash /></Button>
+                                    </td>
+                                </tr>
+                            );
+                        })}
                         </tbody>
                     </Table>
                 )}
@@ -339,7 +397,6 @@ function MenuTab() {
         </div>
     );
 }
-
 
 function TableTab() {
     const [tableList, setTableList] = useState([]);
@@ -365,7 +422,7 @@ function TableTab() {
     const handleDelete = async (id) => {
         if (!window.confirm('Xác nhận xóa bàn này?')) return;
         try { await deleteTable(id); await loadTables(); }
-        catch { alert('Không thể xóa bàn này (có thể đang có đơn hàng liên kết)'); }
+        catch { alert('Không thể xóa bàn này'); }
     };
 
     return (

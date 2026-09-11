@@ -12,8 +12,10 @@ export const NotificationProvider = ({ children }) => {
     useEffect(() => {
         let isMounted = true;
 
+        const host = window.location.hostname;
+
         const connection = new signalR.HubConnectionBuilder()
-            .withUrl("http://localhost:5000/notificationHub", {
+            .withUrl(`http://${host}:5000/notificationHub`, {
                 skipNegotiation: true,
                 transport: signalR.HttpTransportType.WebSockets
             })
