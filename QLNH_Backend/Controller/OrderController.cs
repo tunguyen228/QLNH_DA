@@ -174,7 +174,7 @@ namespace QLNH_Backend.Controllers
 
             await _context.SaveChangesAsync();
 
-            await _hubContext.Clients.All.SendAsync("ReceiveNewOrder", phieuGoi);
+            await _hubContext.Clients.All.SendAsync("NewOrderToKitchen");
 
             return Ok(new { 
                 success = true, 

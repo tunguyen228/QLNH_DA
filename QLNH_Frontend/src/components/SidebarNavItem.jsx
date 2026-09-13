@@ -5,8 +5,6 @@ import { Link, useLocation } from 'react-router-dom';
 const SidebarNavItem = ({ to, icon, label, showDot = false }) => {
     const location = useLocation();
 
-    // Đã sửa: Cho phép active khi url kết thúc bằng 'to' (VD: /phuc-vu/menu) 
-    // HOẶC chứa '/to/' khi có thêm ID phía sau (VD: /phuc-vu/menu/5)
     const isActive = location.pathname === to ||
         location.pathname.endsWith(`/${to}`) ||
         location.pathname.includes(`/${to}/`);
@@ -15,17 +13,15 @@ const SidebarNavItem = ({ to, icon, label, showDot = false }) => {
         <Nav.Link
             as={Link}
             to={to}
-            className={`d-flex align-items-center mb-2 px-3 py-2 fw-bold rounded-3`}
+            className="sidebar-link"
             style={{
                 backgroundColor: isActive ? '#2b5c38' : 'transparent',
                 color: isActive ? '#ffffff' : '#5c5c5c',
-                transition: 'all 0.2s ease-in-out',
-                gap: '14px',
-                fontSize: '0.95rem',
                 position: 'relative'
             }}
+            title={label} /* Giúp hiển thị tooltip khi sidebar thu nhỏ */
         >
-            <span className="d-flex align-items-center justify-content-center" style={{ width: '22px', position: 'relative' }}>
+            <span className="d-flex align-items-center justify-content-center" style={{ width: '22px', position: 'relative', flexShrink: 0 }}>
                 {icon}
                 {showDot && (
                     <span
@@ -42,7 +38,7 @@ const SidebarNavItem = ({ to, icon, label, showDot = false }) => {
                     />
                 )}
             </span>
-            {label}
+            <span className="sidebar-link-text">{label}</span>
         </Nav.Link>
     );
 };

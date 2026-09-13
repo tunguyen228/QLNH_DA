@@ -1,0 +1,85 @@
+/* Khung Sidebar mặc định (Desktop) */
+.responsive-sidebar {
+    width: 250px;
+    height: 100vh;
+    background-color: #f4f1ea;
+    border-right: 1px solid #e2dcd0;
+    transition: width 0.25s ease-in-out;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.sidebar-header {
+    padding: 1.5rem 1rem;
+    text-align: center;
+    transition: all 0.2s ease;
+}
+
+.sidebar-title {
+    color: #2b5c38;
+    letter-spacing: 0.5px;
+    font-weight: bold;
+    margin-bottom: 0.25rem;
+    white-space: nowrap;
+}
+
+.sidebar-user {
+    color: #888;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+}
+
+.sidebar-link {
+    display: flex;
+    align-items: center;
+    padding: 0.6rem 0.85rem;
+    margin-bottom: 0.5rem;
+    font-weight: bold;
+    border-radius: 0.5rem;
+    font-size: 0.95rem;
+    gap: 12px;
+    text-decoration: none;
+    transition: all 0.2s ease-in-out;
+    white-space: nowrap;
+}
+
+.sidebar-link-text {
+    display: inline-block;
+    transition: opacity 0.2s ease;
+}
+
+/* Khi màn hình nhỏ hơn 992px (Tablet / Cửa sổ thu nhỏ) */
+@media (max-width: 991.98px) {
+    .responsive-sidebar {
+        width: 76px !important;
+    }
+
+    /* Ẩn text, chỉ giữ icon */
+    .sidebar-link-text,
+    .sidebar-user {
+        display: none !important;
+    }
+
+    /* Đổi logo thành dạng icon viết tắt */
+    .sidebar-title {
+        font-size: 1rem !important;
+    }
+
+    .sidebar-header {
+        padding: 1rem 0.5rem;
+    }
+
+    /* Căn icon ra giữa */
+    .sidebar-link {
+        justify-content: center !important;
+        padding: 0.7rem 0 !important;
+        gap: 0 !important;
+    }
+
+    .sidebar-link span.d-flex {
+        margin: 0 auto;
+    }
+}

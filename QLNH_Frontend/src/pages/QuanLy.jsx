@@ -24,9 +24,9 @@ export default function QuanLy() {
     };
 
     return (
-        <div className="d-flex" style={{ minHeight: '100vh', backgroundColor: '#fcfaf5' }}>
+        <div className="d-flex" style={{ height: '100vh', backgroundColor: '#fcfaf5', overflow: 'hidden' }}>
             <SidebarQuanLy hoTen={hoTen} onLogout={handleLogout} />
-            <div className="flex-grow-1 p-4" style={{ overflowY: 'auto' }}>
+            <div className="flex-grow-1 d-flex flex-column overflow-hidden" style={{ minWidth: 0 }}>
                 <Routes>
                     <Route index element={<Navigate to="home" replace />} />
                     <Route path="home" element={<DashboardTab />} />

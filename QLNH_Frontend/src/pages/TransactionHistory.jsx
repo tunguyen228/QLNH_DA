@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Form, Button } from 'react-bootstrap';
+import { Container, Form, Button, Card, Table } from 'react-bootstrap'; // Đã thêm Card, Table
 import { Calendar, Filter } from 'react-bootstrap-icons';
 import TransactionTable from '../components/TransactionTable';
 
@@ -29,60 +29,55 @@ const TransactionHistory = () => {
     }, []);
 
     return (
-        <Container fluid className="p-0 d-flex flex-column h-100 overflow-hidden" style={{ backgroundColor: '#fcfaf5' }}>
-            {/* THANH CÔNG CỤ LỌC */}
-            <div className="px-4 pt-4 pb-2 flex-shrink-0">
-                <div className="d-flex align-items-end gap-3 p-3 rounded-4" style={{ backgroundColor: '#f4f4f0' }}>
-
-                    {/* Khoảng ngày */}
-                    <div className="flex-grow-1">
-                        <label className="text-muted fw-bold mb-2" style={{ fontSize: '0.75rem', letterSpacing: '0.5px' }}>
-                            KHOẢNG NGÀY
-                        </label>
-                        <div className="d-flex align-items-center bg-white rounded-3 px-3 py-2 border" style={{ color: '#4b5563', cursor: 'pointer' }}>
-                            <Calendar className="me-2 text-muted" />
-                            <span style={{ fontSize: '0.9rem', fontWeight: '500' }}>01/10/2023 - 31/10/2023</span>
-                        </div>
-                    </div>
-
-                    {/* Nhân viên */}
-                    <div className="flex-grow-1">
-                        <label className="text-muted fw-bold mb-2" style={{ fontSize: '0.75rem', letterSpacing: '0.5px' }}>
-                            NHÂN VIÊN
-                        </label>
-                        <Form.Select className="border shadow-none bg-white rounded-3 py-2 fw-medium" style={{ fontSize: '0.9rem', color: '#4b5563' }}>
-                            <option>Tất cả nhân viên</option>
-                        </Form.Select>
-                    </div>
-
-                    {/* Phương thức */}
-                    <div className="flex-grow-1">
-                        <label className="text-muted fw-bold mb-2" style={{ fontSize: '0.75rem', letterSpacing: '0.5px' }}>
-                            PHƯƠNG THỨC
-                        </label>
-                        <Form.Select className="border shadow-none bg-white rounded-3 py-2 fw-medium" style={{ fontSize: '0.9rem', color: '#4b5563' }}>
-                            <option>Tất cả phương thức</option>
-                        </Form.Select>
-                    </div>
-
-                    {/* Nút Lọc kết quả */}
-                    <div>
-                        <Button
-                            className="border-0 text-dark fw-bold d-flex align-items-center justify-content-center px-4 py-2 rounded-3 shadow-sm"
-                            style={{ backgroundColor: '#efa77f', fontSize: '0.95rem', minWidth: '150px' }}
-                        >
-                            <Filter className="me-2" size={20} /> Lọc kết quả
-                        </Button>
-                    </div>
-
+        <div className="d-flex flex-column h-100 p-4" style={{ backgroundColor: '#fcfaf5' }}>
+            {/* 1. Header & Bộ lọc: Cố định trên cùng */}
+            <div className="flex-shrink-0 mb-3 d-flex justify-content-between align-items-center">
+                <h4 className="fw-bold mb-0" style={{ color: '#1E3923' }}>Lịch sử hóa đơn</h4>
+                <div className="d-flex gap-2">
+                    {/* Bộ lọc ngày, tìm kiếm... */}
                 </div>
             </div>
 
-            {/* BẢNG DỮ LIỆU CỐ ĐỊNH CHIỀU CAO */}
-            <div className="flex-grow-1 overflow-hidden d-flex flex-column px-4 pb-4">
-                <TransactionTable transactions={transactions} isLoading={isLoading} error={error} />
-            </div>
-        </Container>
+            {/* 2. Khung chứa bảng và chân trang */}
+            <Card className="border-0 shadow-sm flex-grow-1 d-flex flex-column overflow-hidden bg-white" style={{ borderRadius: '12px' }}>
+                {/* Vùng thân bảng: Chỉ cuộn riêng vùng này */}
+                <div className="flex-grow-1 overflow-auto">
+                    <Table hover responsive className="align-middle mb-0">
+                        <thead className="table-light sticky-top" style={{ zIndex: 1 }}>
+                        <tr>
+                            <th>MÃ HĐ</th>
+                            <th>BÀN</th>
+                            <th>THỜI GIAN</th>
+                            <th>THU NGÂN</th>
+                            <th className="text-end">TỔNG TIỀN</th>
+                            <th className="text-center">PHƯƠNG THỨC</th>
+                            <th className="text-center">THAO TÁC</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {/* Render danh sách hóa đơn */}
+                        </tbody>
+                    </Table>
+                </div>
+
+                {/* 3. Phần cuối bảng (Footer / Phân trang / Tổng kết): Cố định không bao giờ bị cuộn */}
+                <div className="flex-shrink-0 border-top p-3 bg-white d-flex justify-content-between align-items-center">
+                    <div className="text-muted small">
+                        Hiển thị <strong>10</strong> trên tổng số <strong>120</strong> hóa đơn
+                    </div>
+                    <div className="d-flex align-items-center gap-3">
+                        <span className="fw-bold" style={{ color: '#1E3923' }}>
+                            Tổng trang: 12.500.000 đ
+                        </span>
+                        {/* Các nút phân trang */}
+                        <div className="btn-group btn-group-sm">
+                            <Button variant="outline-secondary">Trước</Button>
+                            <Button variant="outline-secondary">Sau</Button>
+                        </div>
+                    </div>
+                </div>
+            </Card>
+        </div>
     );
 };
 

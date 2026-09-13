@@ -2,6 +2,7 @@ import React from 'react';
 import { Nav } from 'react-bootstrap';
 import SidebarNavItem from './SidebarNavItem';
 import { useNotifications } from '../contexts/NotificationProvider';
+import '../CSS/Sidebar.css';
 
 const NAV_ITEMS = [
     {
@@ -25,24 +26,12 @@ const Sidebar = ({ hoTen, onLogout }) => {
     const { unreadCount } = useNotifications();
 
     return (
-        <div
-            className="d-flex flex-column"
-            style={{
-                width: '260px',
-                height: '100%',
-                backgroundColor: '#f4f1ea',
-                borderRight: '1px solid #e2dcd0'
-            }}
-        >
-            <div className="p-4 mb-2 text-center">
-                <h5 className="fw-bold mb-1" style={{ color: '#2b5c38', letterSpacing: '0.5px' }}>
-                    POS NHÀ HÀNG
-                </h5>
-                <small className="fw-semibold" style={{ color: '#888', fontSize: '0.75rem', letterSpacing: '0.5px' }}>
-                    Xin chào, {hoTen || 'Nhân viên'}
-                </small>
+        <div className="responsive-sidebar">
+            <div className="sidebar-header">
+                <h5 className="sidebar-title">POS</h5>
+                <small className="sidebar-user">Xin chào, {hoTen || 'Nhân viên'}</small>
             </div>
-            <Nav className="flex-column flex-grow-1 p-3" variant="pills">
+            <Nav className="flex-column flex-grow-1 p-2" variant="pills">
                 {NAV_ITEMS.map(item => (
                     <SidebarNavItem
                         key={item.to}
@@ -53,23 +42,20 @@ const Sidebar = ({ hoTen, onLogout }) => {
                     />
                 ))}
             </Nav>
-            <div className="p-4">
+            <div className="p-2">
                 <Nav.Link
-                    className="d-flex align-items-center px-3 py-2 fw-bold rounded-3"
+                    className="sidebar-link"
                     onClick={onLogout}
-                    style={{
-                        color: '#d9534f',
-                        gap: '14px',
-                        fontSize: '0.95rem',
-                        cursor: 'pointer'
-                    }}
+                    style={{ color: '#d9534f', cursor: 'pointer' }}
+                    title="Đăng xuất"
                 >
-                    <span className="d-flex align-items-center justify-content-center" style={{ width: '22px' }}>
+                    <span className="d-flex align-items-center justify-content-center" style={{ width: '22px', flexShrink: 0 }}>
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
                             <path fillRule="evenodd" d="M10 12.5a.5.5 0 0 1-.5.5h-8a.5.5 0 0 1-.5-.5v-9a.5.5 0 0 1 .5-.5h8a.5.5 0 0 1 .5.5v2a.5.5 0 0 0 1 0v-2A1.5 1.5 0 0 0 9.5 2h-8A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h8a1.5 1.5 0 0 0 1.5-1.5v-2a.5.5 0 0 0-1 0v2z"/>
                             <path fillRule="evenodd" d="M15.854 8.354a.5.5 0 0 0 0-.708l-3-3a.5.5 0 0 0-.708.708L14.293 7.5H5.5a.5.5 0 0 0 0 1h8.793l-2.147 2.146a.5.5 0 0 0 .708.708l3-3z"/>
                         </svg>
-                    </span> Đăng xuất
+                    </span>
+                    <span className="sidebar-link-text">Đăng xuất</span>
                 </Nav.Link>
             </div>
         </div>

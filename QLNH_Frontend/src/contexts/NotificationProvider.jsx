@@ -45,8 +45,9 @@ export const NotificationProvider = ({ children }) => {
 
         // 2. Dành cho Bếp: Phục vụ gọi món mới
         connection.on("NewOrderToKitchen", () => {
-            setKitchenRefreshTrigger(prev => prev + 1);
-            setTableRefreshTrigger(prev => prev + 1); // Khi có món mới, bàn cũng chuyển thành "Đang phục vụ"
+            setKitchenRefreshTrigger(prev => prev + 1); // Trigger màn hình Bếp reload
+            setTableRefreshTrigger(prev => prev + 1);   // Trigger Sơ đồ bàn chuyển màu đỏ
+            setCheckoutRefreshTrigger(prev => prev + 1);
         });
 
         // 3. Khi thanh toán thành công hoặc có phiếu gọi mới
@@ -54,12 +55,7 @@ export const NotificationProvider = ({ children }) => {
             setCheckoutRefreshTrigger(prev => prev + 1);
             setTableRefreshTrigger(prev => prev + 1); // Bàn chuyển về "Trống"
         });
-
-        connection.on("CoPhieuGoiMoi", () => {
-            setCheckoutRefreshTrigger(prev => prev + 1);
-            setTableRefreshTrigger(prev => prev + 1);
-        });
-
+        
         const startConnection = async () => {
             try {
                 await connection.start();
