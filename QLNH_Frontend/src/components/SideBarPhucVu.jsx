@@ -22,7 +22,7 @@ const NAV_ITEMS = [
     },
 ];
 
-const Sidebar = ({ hoTen, onLogout }) => {
+const SidebarPhucVu = ({ hoTen, onLogout }) => {
     const { unreadCount } = useNotifications();
 
     return (
@@ -62,4 +62,4 @@ const Sidebar = ({ hoTen, onLogout }) => {
     );
 };
 
-export default Sidebar;
+export default SidebarPhucVu;

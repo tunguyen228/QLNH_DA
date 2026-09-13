@@ -32,6 +32,7 @@ export default function QuanLy() {
                     <Route path="home" element={<div className="h-100 overflow-auto p-4"><DashboardTab /></div>} />
                     <Route path="staff" element={<div className="h-100 overflow-auto p-4"><StaffTab /></div>} />
                     <Route path="menu" element={<div className="h-100 overflow-auto p-4"><MenuTab /></div>} />
+                    <Route path="tables" element={<div className="h-100 overflow-auto p-4"><TableTab /></div>} />
                     <Route path="lich-su" element={<TransactionHistory />} />
                 </Routes>
             </div>
@@ -47,6 +48,7 @@ const formatDate = (date) => {
     return `${year}-${month}-${day}`;
 };
 
+// TAB 1: BÁO CÁO THỐNG KÊ
 function DashboardTab() {
     const [revDate, setRevDate] = useState({
         from: formatDate(new Date(Date.now() - 6 * 24 * 60 * 60 * 1000)),
@@ -137,7 +139,6 @@ function DashboardTab() {
 
     return (
         <div style={{ color: '#2c3e50' }}>
-            {/* THỐNG KÊ DOANH THU */}
             <Card className="shadow-sm border-0 p-4 mb-4 bg-white rounded-4">
                 <div className="d-flex flex-wrap justify-content-between align-items-center gap-3">
                     <div>
@@ -244,7 +245,6 @@ function DashboardTab() {
                 </>
             )}
 
-            {/* TOP MÓN BÁN CHẠY */}
             <Card className="shadow-sm border-0 p-4 bg-white rounded-4">
                 <div className="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
                     <div>
@@ -325,6 +325,7 @@ function DashboardTab() {
     );
 }
 
+// TAB 2: QUẢN LÝ NHÂN VIÊN
 function StaffTab() {
     const [nhanVienList, setNhanVienList] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -383,7 +384,7 @@ function StaffTab() {
                             <tr className="text-muted" style={{ fontSize: '0.8rem', backgroundColor: '#fcfaf5' }}>
                                 <th className="py-3 px-3">ID</th>
                                 <th className="py-3">HỌ TÊN</th>
-                                <th className="py-3">VAI TRÒ</th>
+                                <th className="py-3">CHỨC VỤ</th>
                                 <th className="py-3">SỐ ĐIỆN THOẠI</th>
                                 <th className="py-3">TRẠNG THÁI</th>
                                 <th className="py-3 text-center">THAO TÁC</th>
@@ -415,6 +416,7 @@ function StaffTab() {
     );
 }
 
+// TAB 3: QUẢN LÝ MÓN ĂN
 function MenuTab() {
     const [monAnList, setMonAnList] = useState([]);
     const [nhomList, setNhomList] = useState([]);
@@ -565,6 +567,109 @@ function MenuTab() {
             </Card>
 
             <MenuModal show={showModal} onHide={() => setShowModal(false)} onSave={handleSave} editingItem={editingItem} nhomList={nhomList} />
+        </div>
+    );
+}
+
+// TAB 4: QUẢN LÝ BÀN ĂN
+function TableTab() {
+    const [tableList, setTableList] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [showModal, setShowModal] = useState(false);
+    const [editingTable, setEditingTable] = useState(null);
+
+    useEffect(() => { loadTables(); }, []);
+
+    const loadTables = async () => {
+        setLoading(true);
+        try {
+            const data = await fetchAllTables();
+            setTableList(data);
+        } catch (error) {
+            console.error("Lỗi tải bàn ăn:", error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleSave = async (formData, id) => {
+        if (id) await updateTable(id, formData);
+        else await createTable(formData);
+        await loadTables();
+    };
+
+    const handleDelete = async (id) => {
+        if (!window.confirm(`Xác nhận xóa bàn số ${id}?`)) return;
+        try {
+            await deleteTable(id);
+            await loadTables();
+        } catch (error) {
+            alert('Không thể xóa bàn này');
+        }
+    };
+
+    return (
+        <div>
+            <div className="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h4 className="fw-bold mb-1" style={{ color: '#1E3923' }}>Quản lý bàn ăn</h4>
+                    <span className="text-muted" style={{ fontSize: '0.85rem' }}>Thêm mới, điều chỉnh vị trí tầng, sức chứa và trạng thái các bàn</span>
+                </div>
+                <Button variant="success" className="d-flex align-items-center gap-2 fw-semibold px-3 py-2 rounded-3"
+                        style={{ backgroundColor: '#1E3923', borderColor: '#1E3923' }}
+                        onClick={() => { setEditingTable(null); setShowModal(true); }}>
+                    <FaPlus /> Thêm bàn mới
+                </Button>
+            </div>
+
+            <Card className="shadow-sm border-0 p-4 bg-white rounded-4">
+                {loading ? <div className="text-center py-4"><Spinner animation="border" variant="success" /></div> : (
+                    <div className="table-responsive">
+                        <Table hover className="align-middle mb-0">
+                            <thead>
+                            <tr className="text-muted" style={{ fontSize: '0.8rem', backgroundColor: '#fcfaf5' }}>
+                                <th className="py-3 px-3">MÃ BÀN</th>
+                                <th className="py-3">TÊN HIỂN THỊ</th>
+                                <th className="py-3 text-center">SỨC CHỨA</th>
+                                <th className="py-3 text-center">KHU VỰC / TẦNG</th>
+                                <th className="py-3 text-center">TÌNH TRẠNG</th>
+                                <th className="py-3 text-center">THAO TÁC</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {tableList.length === 0 ? (
+                                <tr>
+                                    <td colSpan="6" className="text-center py-4 text-muted">Chưa có bàn nào được cấu hình</td>
+                                </tr>
+                            ) : (
+                                tableList.map((b) => (
+                                    <tr key={b.maBan || b.id}>
+                                        <td className="py-3 px-3 text-muted fw-bold">{b.maBan || b.id}</td>
+                                        <td className="py-3 fw-bold" style={{ color: '#1E3923' }}>{b.label || `Bàn ${b.maBan}`}</td>
+                                        <td className="py-3 text-center fw-semibold">{b.capacity} người</td>
+                                        <td className="py-3 text-center">Tầng {b.floor}</td>
+                                        <td className="py-3 text-center">
+                                            <Badge bg={b.trangThai === 'Trống' ? 'success' : b.trangThai === 'Đang phục vụ' ? 'danger' : 'warning'}
+                                                   text="white"
+                                                   className="px-3 py-2 rounded-pill">
+                                                {b.trangThai}
+                                            </Badge>
+                                        </td>
+                                        <td className="py-3 text-center">
+                                            <Button variant="outline-primary" size="sm" className="me-2"
+                                                    onClick={() => { setEditingTable(b); setShowModal(true); }}><FaEdit /></Button>
+                                            <Button variant="outline-danger" size="sm" onClick={() => handleDelete(b.maBan || b.id)}><FaTrash /></Button>
+                                        </td>
+                                    </tr>
+                                ))
+                            )}
+                            </tbody>
+                        </Table>
+                    </div>
+                )}
+            </Card>
+
+            <TableModal show={showModal} onHide={() => setShowModal(false)} onSave={handleSave} editingTable={editingTable} />
         </div>
     );
 }
