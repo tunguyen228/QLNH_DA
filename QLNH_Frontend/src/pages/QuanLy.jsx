@@ -29,9 +29,9 @@ export default function QuanLy() {
             <div className="flex-grow-1 d-flex flex-column overflow-hidden" style={{ minWidth: 0 }}>
                 <Routes>
                     <Route index element={<Navigate to="home" replace />} />
-                    <Route path="home" element={<DashboardTab />} />
-                    <Route path="staff" element={<StaffTab />} />
-                    <Route path="menu" element={<MenuTab />} />
+                    <Route path="home" element={<div className="h-100 overflow-auto p-4"><DashboardTab /></div>} />
+                    <Route path="staff" element={<div className="h-100 overflow-auto p-4"><StaffTab /></div>} />
+                    <Route path="menu" element={<div className="h-100 overflow-auto p-4"><MenuTab /></div>} />
                     <Route path="lich-su" element={<TransactionHistory />} />
                 </Routes>
             </div>
@@ -39,7 +39,6 @@ export default function QuanLy() {
     );
 }
 
-// Định dạng ngày sang YYYY-MM-DD theo giờ địa phương
 const formatDate = (date) => {
     const d = new Date(date);
     const year = d.getFullYear();
@@ -49,7 +48,6 @@ const formatDate = (date) => {
 };
 
 function DashboardTab() {
-    // 1. State & Bộ lọc Doanh thu
     const [revDate, setRevDate] = useState({
         from: formatDate(new Date(Date.now() - 6 * 24 * 60 * 60 * 1000)),
         to: formatDate(new Date())
@@ -61,7 +59,6 @@ function DashboardTab() {
     });
     const [loadingRev, setLoadingRev] = useState(true);
 
-    // 2. State & Bộ lọc Top Món Ăn
     const [topDate, setTopDate] = useState({
         from: formatDate(new Date(Date.now() - 6 * 24 * 60 * 60 * 1000)),
         to: formatDate(new Date())
@@ -69,7 +66,6 @@ function DashboardTab() {
     const [topMonAn, setTopMonAn] = useState([]);
     const [loadingTop, setLoadingTop] = useState(true);
 
-    // Fetch dữ liệu Doanh thu
     const fetchRevenue = async (fromVal = revDate.from, toVal = revDate.to) => {
         setLoadingRev(true);
         try {
@@ -88,7 +84,6 @@ function DashboardTab() {
         }
     };
 
-    // Fetch dữ liệu Top Món
     const fetchTopDishes = async (fromVal = topDate.from, toVal = topDate.to) => {
         setLoadingTop(true);
         try {
@@ -108,13 +103,11 @@ function DashboardTab() {
         fetchTopDishes();
     }, []);
 
-    // Nút lọc nhanh cho Doanh thu
     const handleQuickRevFilter = (type) => {
         const now = new Date();
         let from = new Date();
-        if (type === 'today') {
-            from = now;
-        } else if (type === 'week') {
+        if (type === 'today') from = now;
+        else if (type === 'week') {
             const dayOfWeek = now.getDay() || 7;
             from.setDate(now.getDate() - dayOfWeek + 1);
         } else if (type === 'month') {
@@ -126,13 +119,11 @@ function DashboardTab() {
         fetchRevenue(newFrom, newTo);
     };
 
-    // Nút lọc nhanh cho Top Món
     const handleQuickTopFilter = (type) => {
         const now = new Date();
         let from = new Date();
-        if (type === 'today') {
-            from = now;
-        } else if (type === 'week') {
+        if (type === 'today') from = now;
+        else if (type === 'week') {
             const dayOfWeek = now.getDay() || 7;
             from.setDate(now.getDate() - dayOfWeek + 1);
         } else if (type === 'month') {
@@ -146,11 +137,11 @@ function DashboardTab() {
 
     return (
         <div style={{ color: '#2c3e50' }}>
-            {/* ================= PHẦN 1: THỐNG KÊ DOANH THU ================= */}
-            <Card className="shadow-sm border-0 p-3 mb-4 bg-white" style={{ borderRadius: '12px' }}>
+            {/* THỐNG KÊ DOANH THU */}
+            <Card className="shadow-sm border-0 p-4 mb-4 bg-white rounded-4">
                 <div className="d-flex flex-wrap justify-content-between align-items-center gap-3">
                     <div>
-                        <h5 className="fw-bold mb-1" style={{ color: '#1E3923' }}>Thống Kê Doanh Thu</h5>
+                        <h4 className="fw-bold mb-1" style={{ color: '#1E3923' }}>Thống Kê Doanh Thu</h4>
                         <span className="text-muted" style={{ fontSize: '0.85rem' }}>Theo dõi doanh thu và lượng đơn hoàn thành</span>
                     </div>
                     <div className="d-flex flex-wrap align-items-center gap-2">
@@ -191,27 +182,27 @@ function DashboardTab() {
                 <>
                     <Row className="mb-4 g-4">
                         <Col md={6}>
-                            <Card className="shadow-sm border-0 p-3 h-100 bg-white" style={{ borderRadius: '12px', borderLeft: '4px solid #1E3923' }}>
-                                <Card.Body className="p-2">
+                            <Card className="shadow-sm border-0 p-4 h-100 bg-white rounded-4" style={{ borderLeft: '5px solid #1E3923' }}>
+                                <Card.Body className="p-0">
                                     <span className="text-muted fw-bold" style={{ fontSize: '0.75rem', letterSpacing: '0.5px' }}>TỔNG DOANH THU</span>
                                     <h2 className="fw-bold my-2" style={{ color: '#1E3923' }}>
                                         {Number(revStats.tongDoanhThu).toLocaleString()}đ
                                     </h2>
                                     <p className="mb-0 text-success fw-semibold" style={{ fontSize: '0.85rem' }}>
-                                        <FaChartLine /> Tính từ {revDate.from} đến {revDate.to}
+                                        <FaChartLine className="me-1" /> Tính từ {revDate.from} đến {revDate.to}
                                     </p>
                                 </Card.Body>
                             </Card>
                         </Col>
                         <Col md={6}>
-                            <Card className="shadow-sm border-0 p-3 h-100 bg-white" style={{ borderRadius: '12px', borderLeft: '4px solid #8B4513' }}>
-                                <Card.Body className="p-2">
+                            <Card className="shadow-sm border-0 p-4 h-100 bg-white rounded-4" style={{ borderLeft: '5px solid #8B4513' }}>
+                                <Card.Body className="p-0">
                                     <span className="text-muted fw-bold" style={{ fontSize: '0.75rem', letterSpacing: '0.5px' }}>SỐ ĐƠN HÀNG</span>
                                     <h2 className="fw-bold my-2" style={{ color: '#1E3923' }}>
                                         {Number(revStats.soDonHang).toLocaleString()}
                                     </h2>
                                     <p className="mb-0 text-muted" style={{ fontSize: '0.85rem' }}>
-                                        <FaBoxOpen /> Tổng số đơn trong khoảng thời gian này
+                                        <FaBoxOpen className="me-1" /> Tổng số đơn trong khoảng thời gian này
                                     </p>
                                 </Card.Body>
                             </Card>
@@ -220,7 +211,7 @@ function DashboardTab() {
 
                     <Row className="mb-4">
                         <Col xs={12}>
-                            <Card className="shadow-sm border-0 p-4 bg-white" style={{ borderRadius: '12px' }}>
+                            <Card className="shadow-sm border-0 p-4 bg-white rounded-4">
                                 <h6 className="fw-bold mb-4" style={{ color: '#1E3923' }}>Doanh thu các ngày trong tuần</h6>
                                 <div className="d-flex align-items-end justify-content-around" style={{ height: '240px', paddingBottom: '10px', borderBottom: '1px solid #eee' }}>
                                     {revStats.doanhThuTuan.map((item, idx) => (
@@ -240,7 +231,7 @@ function DashboardTab() {
                                         </div>
                                     ))}
                                 </div>
-                                <div className="d-flex justify-content-around text-muted pt-2" style={{ fontSize: '0.85rem' }}>
+                                <div className="d-flex justify-content-around text-muted pt-3" style={{ fontSize: '0.85rem' }}>
                                     {revStats.doanhThuTuan.map((item, idx) => (
                                         <span key={idx} style={{ width: '10%', textAlign: 'center', fontWeight: item.active ? 'bold' : 'normal', color: item.active ? '#1E3923' : '#6c757d' }}>
                                             {item.day}
@@ -253,9 +244,9 @@ function DashboardTab() {
                 </>
             )}
 
-            {/* ================= PHẦN 2: TOP MÓN BÁN CHẠY ================= */}
-            <Card className="shadow-sm border-0 p-4 bg-white" style={{ borderRadius: '12px' }}>
-                <div className="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-3">
+            {/* TOP MÓN BÁN CHẠY */}
+            <Card className="shadow-sm border-0 p-4 bg-white rounded-4">
+                <div className="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
                     <div>
                         <h5 className="fw-bold mb-1" style={{ color: '#1E3923' }}>Top Món Ăn Bán Chạy</h5>
                         <span className="text-muted" style={{ fontSize: '0.85rem' }}>Lọc danh sách món theo thời gian bán</span>
@@ -294,45 +285,46 @@ function DashboardTab() {
                 {loadingTop ? (
                     <div className="text-center py-4"><Spinner animation="border" variant="success" /></div>
                 ) : (
-                    <Table hover responsive className="align-middle mb-0">
-                        <thead>
-                        <tr className="text-muted" style={{ fontSize: '0.8rem', backgroundColor: '#fcfaf5' }}>
-                            <th className="py-3">STT</th>
-                            <th className="py-3">MÓN ĂN</th>
-                            <th className="py-3 text-center">SỐ LƯỢNG</th>
-                            <th className="py-3 text-end">DOANH THU</th>
-                            <th className="py-3 text-center">TRẠNG THÁI</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        {topMonAn.length === 0 ? (
-                            <tr>
-                                <td colSpan="5" className="text-center py-4 text-muted">Không có dữ liệu món bán trong khoảng thời gian này</td>
+                    <div className="table-responsive">
+                        <Table hover className="align-middle mb-0">
+                            <thead>
+                            <tr className="text-muted" style={{ fontSize: '0.8rem', backgroundColor: '#fcfaf5' }}>
+                                <th className="py-3 px-3">STT</th>
+                                <th className="py-3">MÓN ĂN</th>
+                                <th className="py-3 text-center">SỐ LƯỢNG</th>
+                                <th className="py-3 text-end">DOANH THU</th>
+                                <th className="py-3 text-center">TRẠNG THÁI</th>
                             </tr>
-                        ) : (
-                            topMonAn.map((mon, index) => (
-                                <tr key={mon.id || index}>
-                                    <td className="text-muted fw-bold">{mon.id}</td>
-                                    <td><div className="fw-bold" style={{ color: '#1E3923' }}>{mon.name}</div></td>
-                                    <td className="text-center fw-semibold">{mon.qty}</td>
-                                    <td className="text-end fw-bold text-success">{mon.revenue}</td>
-                                    <td className="text-center">
-                                        <Badge bg={mon.status === 'Còn món' ? 'success' : 'warning'} text={mon.status === 'Còn món' ? 'white' : 'dark'}>
-                                            {mon.status}
-                                        </Badge>
-                                    </td>
+                            </thead>
+                            <tbody>
+                            {topMonAn.length === 0 ? (
+                                <tr>
+                                    <td colSpan="5" className="text-center py-4 text-muted">Không có dữ liệu món bán trong khoảng thời gian này</td>
                                 </tr>
-                            ))
-                        )}
-                        </tbody>
-                    </Table>
+                            ) : (
+                                topMonAn.map((mon, index) => (
+                                    <tr key={mon.id || index}>
+                                        <td className="py-3 px-3 text-muted fw-bold">{mon.id}</td>
+                                        <td className="py-3"><div className="fw-bold" style={{ color: '#1E3923' }}>{mon.name}</div></td>
+                                        <td className="py-3 text-center fw-semibold">{mon.qty}</td>
+                                        <td className="py-3 text-end fw-bold text-success">{mon.revenue}</td>
+                                        <td className="py-3 text-center">
+                                            <Badge bg={mon.status === 'Còn món' ? 'success' : 'warning'} text={mon.status === 'Còn món' ? 'white' : 'dark'}>
+                                                {mon.status}
+                                            </Badge>
+                                        </td>
+                                    </tr>
+                                ))
+                            )}
+                            </tbody>
+                        </Table>
+                    </div>
                 )}
             </Card>
         </div>
     );
 }
 
-// TAB 2: Quản lý nhân viên
 function StaffTab() {
     const [nhanVienList, setNhanVienList] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -372,40 +364,49 @@ function StaffTab() {
     return (
         <div>
             <div className="d-flex justify-content-between align-items-center mb-4">
-                <h2 className="fw-bold" style={{ color: '#1E3923' }}>Quản lý nhân viên</h2>
-                <Button variant="success" className="d-flex align-items-center gap-2"
+                <div>
+                    <h4 className="fw-bold mb-1" style={{ color: '#1E3923' }}>Quản lý nhân viên</h4>
+                    <span className="text-muted" style={{ fontSize: '0.85rem' }}>Quản lý danh sách, phân quyền và trạng thái nhân sự</span>
+                </div>
+                <Button variant="success" className="d-flex align-items-center gap-2 fw-semibold px-3 py-2 rounded-3"
                         style={{ backgroundColor: '#1E3923', borderColor: '#1E3923' }}
                         onClick={() => { setEditingStaff(null); setShowModal(true); }}>
                     <FaPlus /> Thêm nhân viên
                 </Button>
             </div>
 
-            <Card className="shadow-sm border-0 p-3 bg-white">
-                {loading ? <div className="text-center py-4"><Spinner animation="border" /></div> : (
-                    <Table hover responsive className="align-middle">
-                        <thead>
-                        <tr>
-                            <th>ID</th><th>Họ tên</th><th>Chức vụ</th><th>Số điện thoại</th><th>Trạng thái</th>
-                            <th className="text-center">Thao tác</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        {nhanVienList.map((nv) => (
-                            <tr key={nv.maNV}>
-                                <td>{nv.maNV}</td>
-                                <td className="fw-bold">{nv.hoTen}</td>
-                                <td>{nv.chucVu}</td>
-                                <td>{nv.sdt}</td>
-                                <td><Badge bg={nv.trangThai === 'Đang làm' ? 'success' : 'secondary'}>{nv.trangThai}</Badge></td>
-                                <td className="text-center">
-                                    <Button variant="outline-primary" size="sm" className="me-2"
-                                            onClick={() => { setEditingStaff(nv); setShowModal(true); }}><FaEdit /></Button>
-                                    <Button variant="outline-danger" size="sm" onClick={() => handleDelete(nv.maNV)}><FaTrash /></Button>
-                                </td>
+            <Card className="shadow-sm border-0 p-4 bg-white rounded-4">
+                {loading ? <div className="text-center py-4"><Spinner animation="border" variant="success" /></div> : (
+                    <div className="table-responsive">
+                        <Table hover className="align-middle mb-0">
+                            <thead>
+                            <tr className="text-muted" style={{ fontSize: '0.8rem', backgroundColor: '#fcfaf5' }}>
+                                <th className="py-3 px-3">ID</th>
+                                <th className="py-3">HỌ TÊN</th>
+                                <th className="py-3">CHỨC VỤ</th>
+                                <th className="py-3">SỐ ĐIỆN THOẠI</th>
+                                <th className="py-3">TRẠNG THÁI</th>
+                                <th className="py-3 text-center">THAO TÁC</th>
                             </tr>
-                        ))}
-                        </tbody>
-                    </Table>
+                            </thead>
+                            <tbody>
+                            {nhanVienList.map((nv) => (
+                                <tr key={nv.maNV}>
+                                    <td className="py-3 px-3 text-muted fw-bold">{nv.maNV}</td>
+                                    <td className="py-3 fw-bold" style={{ color: '#1E3923' }}>{nv.hoTen}</td>
+                                    <td className="py-3">{nv.chucVu}</td>
+                                    <td className="py-3">{nv.sdt}</td>
+                                    <td className="py-3"><Badge bg={nv.trangThai === 'Đang làm' ? 'success' : 'secondary'}>{nv.trangThai}</Badge></td>
+                                    <td className="py-3 text-center">
+                                        <Button variant="outline-primary" size="sm" className="me-2"
+                                                onClick={() => { setEditingStaff(nv); setShowModal(true); }}><FaEdit /></Button>
+                                        <Button variant="outline-danger" size="sm" onClick={() => handleDelete(nv.maNV)}><FaTrash /></Button>
+                                    </td>
+                                </tr>
+                            ))}
+                            </tbody>
+                        </Table>
+                    </div>
                 )}
             </Card>
 
@@ -414,7 +415,6 @@ function StaffTab() {
     );
 }
 
-// TAB 3: Quản lý món ăn
 function MenuTab() {
     const [monAnList, setMonAnList] = useState([]);
     const [nhomList, setNhomList] = useState([]);
@@ -489,154 +489,82 @@ function MenuTab() {
     return (
         <div>
             <div className="d-flex justify-content-between align-items-center mb-4">
-                <h2 className="fw-bold" style={{ color: '#1E3923' }}>Quản lý thực đơn món ăn</h2>
-                <Button variant="success" className="d-flex align-items-center gap-2"
+                <div>
+                    <h4 className="fw-bold mb-1" style={{ color: '#1E3923' }}>Quản lý thực đơn món ăn</h4>
+                    <span className="text-muted" style={{ fontSize: '0.85rem' }}>Thêm mới món ăn, phân nhóm và thiết lập trạng thái kinh doanh</span>
+                </div>
+                <Button variant="success" className="d-flex align-items-center gap-2 fw-semibold px-3 py-2 rounded-3"
                         style={{ backgroundColor: '#1E3923', borderColor: '#1E3923' }}
                         onClick={() => { setEditingItem(null); setShowModal(true); }}>
                     <FaPlus /> Thêm món mới
                 </Button>
             </div>
 
-            <Card className="shadow-sm border-0 p-3 bg-white">
-                {loading ? <div className="text-center py-4"><Spinner animation="border" /></div> : (
-                    <Table hover responsive className="align-middle">
-                        <thead>
-                        <tr>
-                            <th>Mã</th>
-                            <th>Tên món</th>
-                            <th>Nhóm món</th>
-                            <th>Đơn giá</th>
-                            <th className="text-center">Kinh doanh (Menu)</th>
-                            <th className="text-center">Kho hàng</th>
-                            <th className="text-center">Thao tác</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        {monAnList.map((mon) => {
-                            const isDangKinhDoanh = mon.dangKinhDoanh ?? mon.DangKinhDoanh ?? false;
-                            const isTamHet = mon.tamHet ?? mon.TamHet ?? false;
-                            const id = mon.maMon ?? mon.MaMon;
+            <Card className="shadow-sm border-0 p-4 bg-white rounded-4">
+                {loading ? <div className="text-center py-4"><Spinner animation="border" variant="success" /></div> : (
+                    <div className="table-responsive">
+                        <Table hover className="align-middle mb-0">
+                            <thead>
+                            <tr className="text-muted" style={{ fontSize: '0.8rem', backgroundColor: '#fcfaf5' }}>
+                                <th className="py-3 px-3">MÃ</th>
+                                <th className="py-3">TÊN MÓN</th>
+                                <th className="py-3">NHÓM MÓN</th>
+                                <th className="py-3">ĐƠN GIÁ</th>
+                                <th className="py-3 text-center">KINH DOANH (MENU)</th>
+                                <th className="py-3 text-center">KHO HÀNG</th>
+                                <th className="py-3 text-center">THAO TÁC</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {monAnList.map((mon) => {
+                                const isDangKinhDoanh = mon.dangKinhDoanh ?? mon.DangKinhDoanh ?? false;
+                                const isTamHet = mon.tamHet ?? mon.TamHet ?? false;
+                                const id = mon.maMon ?? mon.MaMon;
 
-                            return (
-                                <tr key={id} style={{ opacity: isDangKinhDoanh ? 1 : 0.65 }}>
-                                    <td>{id}</td>
-                                    <td className="fw-bold">{mon.tenMon ?? mon.TenMon}</td>
-                                    <td>{mon.tenNhom ?? mon.TenNhom}</td>
-                                    <td>{(mon.giaTien ?? mon.GiaTien)?.toLocaleString()} đ</td>
-                                    <td className="text-center">
-                                        <Button
-                                            size="sm"
-                                            variant={isDangKinhDoanh ? "success" : "secondary"}
-                                            className="px-2 py-1"
-                                            onClick={() => handleToggleDangKinhDoanh(mon)}
-                                            style={{ minWidth: '130px', fontSize: '0.8rem' }}
-                                        >
-                                            {isDangKinhDoanh ? "Đang mở bán" : "Đã ngừng bán"}
-                                        </Button>
-                                    </td>
-                                    <td className="text-center">
-                                        <Button
-                                            size="sm"
-                                            variant={isTamHet ? "danger" : "outline-success"}
-                                            className="px-2 py-1"
-                                            disabled={!isDangKinhDoanh}
-                                            onClick={() => handleToggleTamHet(mon)}
-                                            style={{ minWidth: '105px', fontSize: '0.8rem' }}
-                                        >
-                                            {isTamHet ? "✕ Tạm hết" : "✓ Còn món"}
-                                        </Button>
-                                    </td>
-                                    <td className="text-center">
-                                        <Button variant="outline-primary" size="sm" className="me-2"
-                                                onClick={() => { setEditingItem(mon); setShowModal(true); }}><FaEdit /></Button>
-                                        <Button variant="outline-danger" size="sm" onClick={() => handleDelete(id)}><FaTrash /></Button>
-                                    </td>
-                                </tr>
-                            );
-                        })}
-                        </tbody>
-                    </Table>
+                                return (
+                                    <tr key={id} style={{ opacity: isDangKinhDoanh ? 1 : 0.65 }}>
+                                        <td className="py-3 px-3 text-muted fw-bold">{id}</td>
+                                        <td className="py-3 fw-bold" style={{ color: '#1E3923' }}>{mon.tenMon ?? mon.TenMon}</td>
+                                        <td className="py-3">{mon.tenNhom ?? mon.TenNhom}</td>
+                                        <td className="py-3 fw-semibold">{(mon.giaTien ?? mon.GiaTien)?.toLocaleString()} đ</td>
+                                        <td className="py-3 text-center">
+                                            <Button
+                                                size="sm"
+                                                variant={isDangKinhDoanh ? "success" : "secondary"}
+                                                className="px-3 py-1 rounded-pill"
+                                                onClick={() => handleToggleDangKinhDoanh(mon)}
+                                                style={{ minWidth: '130px', fontSize: '0.8rem' }}
+                                            >
+                                                {isDangKinhDoanh ? "Đang mở bán" : "Đã ngừng bán"}
+                                            </Button>
+                                        </td>
+                                        <td className="py-3 text-center">
+                                            <Button
+                                                size="sm"
+                                                variant={isTamHet ? "danger" : "outline-success"}
+                                                className="px-3 py-1 rounded-pill"
+                                                disabled={!isDangKinhDoanh}
+                                                onClick={() => handleToggleTamHet(mon)}
+                                                style={{ minWidth: '105px', fontSize: '0.8rem' }}
+                                            >
+                                                {isTamHet ? "✕ Tạm hết" : "✓ Còn món"}
+                                            </Button>
+                                        </td>
+                                        <td className="py-3 text-center">
+                                            <Button variant="outline-primary" size="sm" className="me-2"
+                                                    onClick={() => { setEditingItem(mon); setShowModal(true); }}><FaEdit /></Button>
+                                            <Button variant="outline-danger" size="sm" onClick={() => handleDelete(id)}><FaTrash /></Button>
+                                        </td>
+                                    </tr>
+                                );
+                            })}
+                            </tbody>
+                        </Table>
+                    </div>
                 )}
             </Card>
 
             <MenuModal show={showModal} onHide={() => setShowModal(false)} onSave={handleSave} editingItem={editingItem} nhomList={nhomList} />
-        </div>
-    );
-}
-
-// TAB 4: Quản lý bàn ăn
-function TableTab() {
-    const [tableList, setTableList] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [showModal, setShowModal] = useState(false);
-    const [editingTable, setEditingTable] = useState(null);
-
-    useEffect(() => { loadTables(); }, []);
-
-    const loadTables = async () => {
-        setLoading(true);
-        try { setTableList(await fetchAllTables()); }
-        catch (error) { console.error("Lỗi tải bàn ăn:", error); }
-        finally { setLoading(false); }
-    };
-
-    const handleSave = async (formData, id) => {
-        if (id) await updateTable(id, formData);
-        else await createTable(formData);
-        await loadTables();
-    };
-
-    const handleDelete = async (id) => {
-        if (!window.confirm('Xác nhận xóa bàn này?')) return;
-        try { await deleteTable(id); await loadTables(); }
-        catch { alert('Không thể xóa bàn này'); }
-    };
-
-    return (
-        <div>
-            <div className="d-flex justify-content-between align-items-center mb-4">
-                <h2 className="fw-bold" style={{ color: '#1E3923' }}>Quản lý bàn ăn</h2>
-                <Button variant="success" className="d-flex align-items-center gap-2"
-                        style={{ backgroundColor: '#1E3923', borderColor: '#1E3923' }}
-                        onClick={() => { setEditingTable(null); setShowModal(true); }}>
-                    <FaPlus /> Thêm bàn mới
-                </Button>
-            </div>
-
-            <Card className="shadow-sm border-0 p-3 bg-white">
-                {loading ? <div className="text-center py-4"><Spinner animation="border" /></div> : (
-                    <Table hover responsive className="align-middle">
-                        <thead>
-                        <tr>
-                            <th>Mã bàn</th><th>Sức chứa</th><th>Khu vực</th><th>Tình trạng</th>
-                            <th className="text-center">Thao tác</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        {tableList.map((b) => (
-                            <tr key={b.maBan}>
-                                <td className="fw-bold">{b.maBan}</td>
-                                <td>{b.capacity} người</td>
-                                <td>{b.floor}</td>
-                                <td>
-                                    <Badge bg={b.trangThai === 'Trống' ? 'success' : b.trangThai === 'Đang phục vụ' ? 'warning' : 'info'}
-                                           text={b.trangThai === 'Trống' ? 'white' : 'dark'}>
-                                        {b.trangThai}
-                                    </Badge>
-                                </td>
-                                <td className="text-center">
-                                    <Button variant="outline-primary" size="sm" className="me-2"
-                                            onClick={() => { setEditingTable(b); setShowModal(true); }}><FaEdit /></Button>
-                                    <Button variant="outline-danger" size="sm" onClick={() => handleDelete(b.maBan)}><FaTrash /></Button>
-                                </td>
-                            </tr>
-                        ))}
-                        </tbody>
-                    </Table>
-                )}
-            </Card>
-
-            <TableModal show={showModal} onHide={() => setShowModal(false)} onSave={handleSave} editingTable={editingTable} />
         </div>
     );
 }

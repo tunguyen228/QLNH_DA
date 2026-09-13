@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Form, Button, Card, Table } from 'react-bootstrap'; // Đã thêm Card, Table
+import { Form, Button } from 'react-bootstrap';
 import { Calendar, Filter } from 'react-bootstrap-icons';
 import TransactionTable from '../components/TransactionTable';
 
@@ -8,75 +8,77 @@ const TransactionHistory = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
 
+    // Phân trang
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 8;
+
     useEffect(() => {
+        let isMounted = true;
+        const controller = new AbortController();
+
         const fetchTransactions = async () => {
             try {
                 setIsLoading(true);
-                const response = await fetch('http://localhost:5000/api/transaction/history');
+                const response = await fetch('http://localhost:5000/api/transaction/history', {
+                    signal: controller.signal
+                });
 
                 if (!response.ok) throw new Error('Lỗi khi tải dữ liệu từ máy chủ');
 
                 const data = await response.json();
-                setTransactions(data);
+                if (isMounted) {
+                    setTransactions(Array.isArray(data) ? data : []);
+                }
             } catch (err) {
-                setError(err.message);
+                if (err.name !== 'AbortError' && isMounted) {
+                    setError(err.message);
+                }
             } finally {
-                setIsLoading(false);
+                if (isMounted) {
+                    setIsLoading(false);
+                }
             }
         };
 
         fetchTransactions();
+
+        return () => {
+            isMounted = false;
+            controller.abort();
+        };
     }, []);
 
+    // Tính toán dữ liệu cho trang hiện tại
+    const totalPages = Math.ceil(transactions.length / itemsPerPage) || 1;
+    const currentTransactions = transactions.slice(
+        (currentPage - 1) * itemsPerPage,
+        currentPage * itemsPerPage
+    );
+
     return (
-        <div className="d-flex flex-column h-100 p-4" style={{ backgroundColor: '#fcfaf5' }}>
-            {/* 1. Header & Bộ lọc: Cố định trên cùng */}
+        <div className="d-flex flex-column h-100 p-4 overflow-hidden" style={{ backgroundColor: '#fcfaf5' }}>
+            {/* Header và Bộ lọc: Cố định bên trên */}
             <div className="flex-shrink-0 mb-3 d-flex justify-content-between align-items-center">
-                <h4 className="fw-bold mb-0" style={{ color: '#1E3923' }}>Lịch sử hóa đơn</h4>
-                <div className="d-flex gap-2">
-                    {/* Bộ lọc ngày, tìm kiếm... */}
+                <div>
+                    <h4 className="fw-bold mb-1" style={{ color: '#1E3923' }}>Lịch sử hóa đơn</h4>
+                    <span className="text-muted" style={{ fontSize: '0.85rem' }}>
+                        Theo dõi danh sách các đơn thanh toán và giao dịch
+                    </span>
                 </div>
             </div>
 
-            {/* 2. Khung chứa bảng và chân trang */}
-            <Card className="border-0 shadow-sm flex-grow-1 d-flex flex-column overflow-hidden bg-white" style={{ borderRadius: '12px' }}>
-                {/* Vùng thân bảng: Chỉ cuộn riêng vùng này */}
-                <div className="flex-grow-1 overflow-auto">
-                    <Table hover responsive className="align-middle mb-0">
-                        <thead className="table-light sticky-top" style={{ zIndex: 1 }}>
-                        <tr>
-                            <th>MÃ HĐ</th>
-                            <th>BÀN</th>
-                            <th>THỜI GIAN</th>
-                            <th>THU NGÂN</th>
-                            <th className="text-end">TỔNG TIỀN</th>
-                            <th className="text-center">PHƯƠNG THỨC</th>
-                            <th className="text-center">THAO TÁC</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        {/* Render danh sách hóa đơn */}
-                        </tbody>
-                    </Table>
-                </div>
-
-                {/* 3. Phần cuối bảng (Footer / Phân trang / Tổng kết): Cố định không bao giờ bị cuộn */}
-                <div className="flex-shrink-0 border-top p-3 bg-white d-flex justify-content-between align-items-center">
-                    <div className="text-muted small">
-                        Hiển thị <strong>10</strong> trên tổng số <strong>120</strong> hóa đơn
-                    </div>
-                    <div className="d-flex align-items-center gap-3">
-                        <span className="fw-bold" style={{ color: '#1E3923' }}>
-                            Tổng trang: 12.500.000 đ
-                        </span>
-                        {/* Các nút phân trang */}
-                        <div className="btn-group btn-group-sm">
-                            <Button variant="outline-secondary">Trước</Button>
-                            <Button variant="outline-secondary">Sau</Button>
-                        </div>
-                    </div>
-                </div>
-            </Card>
+            {/* Bảng danh sách & Phân trang: Co giãn trọn màn hình */}
+            <div className="flex-grow-1 overflow-hidden" style={{ minHeight: 0 }}>
+                <TransactionTable
+                    transactions={currentTransactions}
+                    totalItems={transactions.length}
+                    isLoading={isLoading}
+                    error={error}
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    onPageChange={(page) => setCurrentPage(page)}
+                />
+            </div>
         </div>
     );
 };
