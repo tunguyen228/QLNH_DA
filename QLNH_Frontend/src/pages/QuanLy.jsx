@@ -383,7 +383,7 @@ function StaffTab() {
                             <tr className="text-muted" style={{ fontSize: '0.8rem', backgroundColor: '#fcfaf5' }}>
                                 <th className="py-3 px-3">ID</th>
                                 <th className="py-3">HỌ TÊN</th>
-                                <th className="py-3">CHỨC VỤ</th>
+                                <th className="py-3">VAI TRÒ</th>
                                 <th className="py-3">SỐ ĐIỆN THOẠI</th>
                                 <th className="py-3">TRẠNG THÁI</th>
                                 <th className="py-3 text-center">THAO TÁC</th>
