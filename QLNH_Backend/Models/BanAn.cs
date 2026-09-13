@@ -5,8 +5,11 @@ namespace QLNH_Backend.Models;
 
 public class BanAn
 {
+    public const string TrangThaiTrong = "Trống";
+    public const string TrangThaiDangPhucVu = "Đang phục vụ";
+
     public int MaBan { get; set; }
-    public string TrangThai { get; set; } = "Trống";
+    public string TrangThai { get; set; } = TrangThaiTrong;
     public int Tang { get; set; }
     public int SoGhe { get; set; }
     

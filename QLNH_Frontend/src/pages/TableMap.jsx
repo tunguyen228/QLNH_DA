@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Card, Button, Spinner } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import '../CSS/TableMap.css';
-import { getTableMap } from '../services/tableService';  
+import { getTableMap } from '../services/tableService';
+import { useNotifications } from '../contexts/NotificationProvider';
 
 const TableMap = () => {
     const [allTables, setAllTables] = useState([]);
@@ -10,9 +11,8 @@ const TableMap = () => {
     const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
 
-    useEffect(() => {
-        fetchTableData();
-    }, []);
+    // Nhận trigger SignalR từ NotificationProvider
+    const { tableRefreshTrigger } = useNotifications() || {};
 
     const fetchTableData = async () => {
         try {
@@ -41,6 +41,18 @@ const TableMap = () => {
             setLoading(false);
         }
     };
+
+    // Tải dữ liệu lần đầu khi vào trang
+    useEffect(() => {
+        fetchTableData();
+    }, []);
+
+    // Tự động load lại sơ đồ bàn khi SignalR nhận sự kiện thanh toán hoặc order
+    useEffect(() => {
+        if (tableRefreshTrigger > 0) {
+            fetchTableData();
+        }
+    }, [tableRefreshTrigger]);
 
     const getStatusClass = (status) => {
         switch (status) {
@@ -92,7 +104,7 @@ const TableMap = () => {
                             >
                                 <div className="d-flex justify-content-between align-items-start mb-4">
                                     <h3 className="fw-bold mb-0 table-name">
-                                        {table.name.replace('Bàn ', ' ')} 
+                                        {table.name.replace('Bàn ', ' ')}
                                     </h3>
                                     <span className="status-badge text-uppercase">
                                         {table.statusText}

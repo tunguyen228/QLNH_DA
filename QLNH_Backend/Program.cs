@@ -66,6 +66,8 @@ builder.Services.AddCors(options =>
     });
 });
 
+AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())

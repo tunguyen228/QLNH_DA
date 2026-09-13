@@ -7,11 +7,12 @@ export const useNotifications = () => useContext(NotificationContext);
 
 export const NotificationProvider = ({ children }) => {
     const [notifications, setNotifications] = useState([]);
-    const [kitchenRefreshTrigger, setKitchenRefreshTrigger] = useState(0); // Dùng để trigger reload data ở Bếp
+    const [kitchenRefreshTrigger, setKitchenRefreshTrigger] = useState(0);
+    const [checkoutRefreshTrigger, setCheckoutRefreshTrigger] = useState(0);
+    const [tableRefreshTrigger, setTableRefreshTrigger] = useState(0); // Trigger cho Sơ đồ bàn
 
     useEffect(() => {
         let isMounted = true;
-
         const host = window.location.hostname;
 
         const connection = new signalR.HubConnectionBuilder()
@@ -22,7 +23,7 @@ export const NotificationProvider = ({ children }) => {
             .withAutomaticReconnect()
             .build();
 
-        // 1. Dành cho Phục vụ: Lắng nghe khi Bếp nấu xong
+        // 1. Dành cho Phục vụ: Bếp nấu xong
         connection.on("DishStatusUpdated", (data) => {
             const trangThai = data.trangThai ?? data.TrangThai;
             const isDone = trangThai === "DaXong" || trangThai === "HoanThanh";
@@ -42,10 +43,21 @@ export const NotificationProvider = ({ children }) => {
             setNotifications(prev => [newItem, ...prev].slice(0, 30));
         });
 
-        // 2. Dành cho Bếp: Lắng nghe khi Phục vụ gọi món mới (Tùy chọn thêm để realtime)
+        // 2. Dành cho Bếp: Phục vụ gọi món mới
         connection.on("NewOrderToKitchen", () => {
-            // Thay đổi state để màn hình Bếp tự động fetch lại data mà không cần setInterval 10s
             setKitchenRefreshTrigger(prev => prev + 1);
+            setTableRefreshTrigger(prev => prev + 1); // Khi có món mới, bàn cũng chuyển thành "Đang phục vụ"
+        });
+
+        // 3. Khi thanh toán thành công hoặc có phiếu gọi mới
+        connection.on("ThanhToanThanhCong", () => {
+            setCheckoutRefreshTrigger(prev => prev + 1);
+            setTableRefreshTrigger(prev => prev + 1); // Bàn chuyển về "Trống"
+        });
+
+        connection.on("CoPhieuGoiMoi", () => {
+            setCheckoutRefreshTrigger(prev => prev + 1);
+            setTableRefreshTrigger(prev => prev + 1);
         });
 
         const startConnection = async () => {
@@ -89,7 +101,9 @@ export const NotificationProvider = ({ children }) => {
             unreadCount,
             markAllAsRead,
             clearAll,
-            kitchenRefreshTrigger // Export biến này ra để dùng ở Kitchen.jsx
+            kitchenRefreshTrigger,
+            checkoutRefreshTrigger,
+            tableRefreshTrigger // Cung cấp biến này ra toàn bộ App
         }}>
             {children}
         </NotificationContext.Provider>

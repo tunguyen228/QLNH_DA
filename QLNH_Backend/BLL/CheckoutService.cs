@@ -19,50 +19,62 @@ namespace QLNH_Backend.BLL
 
         public async Task<CheckoutResponseDTO> ProcessCheckoutAsync(CheckoutRequestDTO request)
         {
+            using var transaction = await _context.Database.BeginTransactionAsync();
             try
             {
                 var table = await _context.BanAns.FindAsync(request.MaBan);
 
+                // 1. Lọc các phiếu gọi của bàn chưa được gán hóa đơn (MaHoaDon == null)
                 var phieuGois = await _context.PhieuGois
                     .Include(p => p.ChiTietPhieuGois)
                     .ThenInclude(c => c.MaMonNavigation)
-                    .Where(p => p.MaBan == request.MaBan && p.TrangThai != "Đã thanh toán")
+                    .Where(p => p.MaBan == request.MaBan && p.MaHoaDon == null && p.TrangThai != "Đã thanh toán")
                     .ToListAsync();
 
                 if (!phieuGois.Any())
-                    return new CheckoutResponseDTO { Success = false, Message = "Bàn chưa có phiếu gọi để thanh toán" };
-
-                KhachHang khachHang = null;
-                if (!string.IsNullOrEmpty(request.SoDienThoai))
                 {
-                    khachHang = await _context.KhachHangs.FirstOrDefaultAsync(k => k.SoDienThoai == request.SoDienThoai);
+                    return new CheckoutResponseDTO 
+                    { 
+                        Success = false, 
+                        Message = "Bàn không có phiếu gọi nào cần thanh toán!" 
+                    };
                 }
 
+                KhachHang khachHang = null;
+                if (!string.IsNullOrWhiteSpace(request.SoDienThoai))
+                {
+                    khachHang = await _context.KhachHangs
+                        .FirstOrDefaultAsync(k => k.SoDienThoai == request.SoDienThoai.Trim());
+                }
+
+                // 2. Tính tiền
                 decimal tamTinh = 0;
                 foreach (var p in phieuGois)
                 {
                     tamTinh += p.ChiTietPhieuGois.Sum(c => c.SoLuong * (c.MaMonNavigation?.GiaTien ?? 0));
                 }
 
-                decimal vat = tamTinh * 0.10m;       // 10%
+                decimal vat = tamTinh * 0.10m;        // 10% VAT
                 decimal giamGia = 0m;
-                decimal tongThanhToan = tamTinh + vat - giamGia; // Không có phí phục vụ
+                decimal tongThanhToan = tamTinh + vat - giamGia;
 
                 var now = DateTime.UtcNow;
 
+                // 3. Khởi tạo Hóa đơn
                 var hoaDon = new HoaDon
                 {
-                    MaNv = 1,
+                    MaNv = 1, // Thay bằng ID thu ngân thực tế nếu có truyền từ Token/Request
                     MaKh = khachHang?.MaKh,
-                    ThoiGianVao = now,
+                    ThoiGianVao = phieuGois.Min(p => p.ThoiGianTao) ?? now,
                     ThoiGianRa = now,
                     PhuongThucTt = request.PhuongThucTt,
                     Vat = vat,
                     GiamGia = giamGia,
-                    TienKhachDua = 0m,
+                    TienKhachDua = tongThanhToan,
                     TienThua = 0m
                 };
 
+                // Nhóm chi tiết món từ các phiếu gọi vào hóa đơn
                 var groupedDetails = phieuGois
                     .SelectMany(p => p.ChiTietPhieuGois)
                     .GroupBy(ct => new { ct.MaMon, GiaTien = ct.MaMonNavigation?.GiaTien ?? 0 })
@@ -71,30 +83,35 @@ namespace QLNH_Backend.BLL
                         MaMon = g.Key.MaMon,
                         SoLuong = g.Sum(x => x.SoLuong),
                         DonGia = g.Key.GiaTien
-                    });
+                    }).ToList();
 
                 foreach (var item in groupedDetails)
                 {
                     hoaDon.ChiTietHoaDons.Add(item);
                 }
 
+                _context.HoaDons.Add(hoaDon);
+                // Lưu trước để sinh khóa chính hoaDon.MaHoaDon
+                await _context.SaveChangesAsync();
+
+                // 4. Gán trực tiếp MaHoaDon và cập nhật trạng thái cho từng phiếu gọi
                 foreach (var p in phieuGois)
                 {
+                    p.MaHoaDon = hoaDon.MaHoaDon;
                     p.TrangThai = "Đã thanh toán";
-                    hoaDon.PhieuGois.Add(p);
                 }
 
-                _context.HoaDons.Add(hoaDon);
-
+                // 5. Lưu bảng trung gian HoaDonBan
                 var hoaDonBan = new HoaDonBan
                 {
-                    MaHoaDonNavigation = hoaDon,
+                    MaHoaDon = hoaDon.MaHoaDon,
                     MaBan = request.MaBan,
                     ThoiGianTao = now,
                     TrangThai = "Đã thanh toán"
                 };
                 _context.HoaDonBans.Add(hoaDonBan);
 
+                // 6. Tích điểm cho khách hàng
                 int diemCong = 0;
                 if (khachHang != null)
                 {
@@ -102,9 +119,14 @@ namespace QLNH_Backend.BLL
                     khachHang.DiemTichLuy += diemCong;
                 }
 
-                if (table != null) table.TrangThai = "Trống";
+                // 7. Chuyển trạng thái bàn về lại Trống
+                if (table != null)
+                {
+                    table.TrangThai = "Trống";
+                }
 
                 await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
 
                 return new CheckoutResponseDTO
                 {
@@ -116,6 +138,7 @@ namespace QLNH_Backend.BLL
             }
             catch (Exception ex)
             {
+                await transaction.RollbackAsync();
                 var detail = ex.InnerException?.Message ?? ex.Message;
                 return new CheckoutResponseDTO
                 {
@@ -124,15 +147,15 @@ namespace QLNH_Backend.BLL
                 };
             }
         }
+
         public async Task<object> GetCashierByIdAsync(int id)
         {
-            // Truy vấn vào bảng NhanVien dựa theo model của bạn
             var cashier = await _context.NhanViens
                 .Where(nv => nv.MaNv == id && nv.TrangThaiHoatDong == "Làm việc")
                 .Select(nv => new 
                 {
-                    HoTen = nv.HoTen,
-                    VaiTro = nv.VaiTro
+                    nv.HoTen,
+                    nv.VaiTro
                 })
                 .FirstOrDefaultAsync();
 

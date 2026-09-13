@@ -41,7 +41,7 @@ namespace QLNH_Backend.Controllers
                 total++;
                 TableStatus mappedStatus = TableStatus.Empty;
 
-                if (b.TrangThai == "Đang sử dụng" || b.TrangThai == "Có khách")
+                if (b.TrangThai?.Trim() == "Đang phục vụ")
                 {
                     mappedStatus = TableStatus.InUse;
                     inUse++;
@@ -78,8 +78,10 @@ namespace QLNH_Backend.Controllers
         [HttpGet("active")]
         public async Task<IActionResult> GetActiveTables()
         {
+            // Lấy danh sách các bàn có phiếu gọi chưa xuất hóa đơn (MaHoaDon == null)
             var tables = await _context.BanAns
-                .Where(b => b.TrangThai == "Đang sử dụng")
+                .Where(b => _context.PhieuGois.Any(p => p.MaBan == b.MaBan && p.MaHoaDon == null))
+                .OrderBy(b => b.MaBan)
                 .Select(b => new
                 {
                     id = b.MaBan,

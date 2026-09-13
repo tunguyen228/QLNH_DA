@@ -50,19 +50,17 @@ const checkoutService = {
             return "INV-ERROR";
         }
     },
-    
+
     processCheckout: async (payload) => {
         try {
-            // Gọi POST đến CheckoutController vừa tạo
             const response = await axios.post(`${API_URL}/Checkout`, payload);
             return response.data;
         } catch (error) {
-            console.error("Lỗi khi thanh toán:", error);
-            // Bắt lỗi từ BadRequest của Backend
+            console.error("Chi tiết phản hồi lỗi từ server:", error.response?.data);
             if (error.response && error.response.data) {
-                return error.response.data;
+                return error.response.data; // Trả về { success: false, message: "..." } từ C#
             }
-            throw new Error("Lỗi kết nối máy chủ");
+            return { success: false, message: "Lỗi kết nối máy chủ" };
         }
     },
     

@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace QLNH_Backend.DTO
 {
     public class SendOrderRequestDTO
@@ -11,6 +13,7 @@ namespace QLNH_Backend.DTO
     {
         public int MonAnId { get; set; }
         public int SoLuong { get; set; }
+        [MaxLength(255, ErrorMessage = "Độ dài ghi chú không được vượt quá 255 ký tự")]
         public string GhiChu { get; set; }
     }
     
@@ -24,6 +27,7 @@ namespace QLNH_Backend.DTO
     {
         public int MaMon { get; set; }
         public int SoLuong { get; set; }
+        [MaxLength(255, ErrorMessage = "Độ dài ghi chú không được vượt quá 255 ký tự")]
         public string GhiChu { get; set; }
     }
 }

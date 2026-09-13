@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Row, Col, Card, Table, Badge, Spinner, Button } from 'react-bootstrap';
+import { Row, Col, Card, Table, Badge, Spinner, Button, Form } from 'react-bootstrap';
 import { Routes, Route, useNavigate, Navigate } from 'react-router-dom';
-import { FaPlus, FaEdit, FaTrash, FaChartLine, FaBoxOpen } from 'react-icons/fa';
+import { FaPlus, FaEdit, FaTrash, FaChartLine, FaBoxOpen, FaFilter } from 'react-icons/fa';
 import SidebarQuanLy from '../components/SidebarQuanLy';
 import TransactionHistory from './TransactionHistory';
 import StaffModal from '../components/StaffModal';
@@ -39,127 +39,300 @@ export default function QuanLy() {
     );
 }
 
+// Định dạng ngày sang YYYY-MM-DD theo giờ địa phương
+const formatDate = (date) => {
+    const d = new Date(date);
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+};
+
 function DashboardTab() {
-    const [stats, setStats] = useState({
+    // 1. State & Bộ lọc Doanh thu
+    const [revDate, setRevDate] = useState({
+        from: formatDate(new Date(Date.now() - 6 * 24 * 60 * 60 * 1000)),
+        to: formatDate(new Date())
+    });
+    const [revStats, setRevStats] = useState({
         tongDoanhThu: 0,
         soDonHang: 0,
-        doanhThuTuan: [],
-        topMonAn: []
+        doanhThuTuan: []
     });
-    const [loading, setLoading] = useState(true);
+    const [loadingRev, setLoadingRev] = useState(true);
 
-    useEffect(() => {
-        fetchDashboardData();
-    }, []);
+    // 2. State & Bộ lọc Top Món Ăn
+    const [topDate, setTopDate] = useState({
+        from: formatDate(new Date(Date.now() - 6 * 24 * 60 * 60 * 1000)),
+        to: formatDate(new Date())
+    });
+    const [topMonAn, setTopMonAn] = useState([]);
+    const [loadingTop, setLoadingTop] = useState(true);
 
-    const fetchDashboardData = async () => {
+    // Fetch dữ liệu Doanh thu
+    const fetchRevenue = async (fromVal = revDate.from, toVal = revDate.to) => {
+        setLoadingRev(true);
         try {
-            const response = await axios.get(`${API_BASE_URL}/Dashboard/stats`);
-            setStats(response.data);
+            const res = await axios.get(`${API_BASE_URL}/Dashboard/revenue`, {
+                params: { from: fromVal, to: toVal }
+            });
+            setRevStats({
+                tongDoanhThu: res.data.tongDoanhThu || 0,
+                soDonHang: res.data.soDonHang || 0,
+                doanhThuTuan: res.data.doanhThuTuan || []
+            });
         } catch (error) {
-            console.error("Lỗi khi tải dữ liệu thống kê từ API:", error);
+            console.error("Lỗi khi tải dữ liệu doanh thu:", error);
         } finally {
-            setLoading(false);
+            setLoadingRev(false);
         }
     };
 
-    if (loading) {
-        return <div className="text-center py-5"><Spinner animation="border" variant="success" /></div>;
-    }
+    // Fetch dữ liệu Top Món
+    const fetchTopDishes = async (fromVal = topDate.from, toVal = topDate.to) => {
+        setLoadingTop(true);
+        try {
+            const res = await axios.get(`${API_BASE_URL}/Dashboard/top-dishes`, {
+                params: { from: fromVal, to: toVal }
+            });
+            setTopMonAn(res.data || []);
+        } catch (error) {
+            console.error("Lỗi khi tải top món ăn:", error);
+        } finally {
+            setLoadingTop(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchRevenue();
+        fetchTopDishes();
+    }, []);
+
+    // Nút lọc nhanh cho Doanh thu
+    const handleQuickRevFilter = (type) => {
+        const now = new Date();
+        let from = new Date();
+        if (type === 'today') {
+            from = now;
+        } else if (type === 'week') {
+            const dayOfWeek = now.getDay() || 7;
+            from.setDate(now.getDate() - dayOfWeek + 1);
+        } else if (type === 'month') {
+            from = new Date(now.getFullYear(), now.getMonth(), 1);
+        }
+        const newFrom = formatDate(from);
+        const newTo = formatDate(now);
+        setRevDate({ from: newFrom, to: newTo });
+        fetchRevenue(newFrom, newTo);
+    };
+
+    // Nút lọc nhanh cho Top Món
+    const handleQuickTopFilter = (type) => {
+        const now = new Date();
+        let from = new Date();
+        if (type === 'today') {
+            from = now;
+        } else if (type === 'week') {
+            const dayOfWeek = now.getDay() || 7;
+            from.setDate(now.getDate() - dayOfWeek + 1);
+        } else if (type === 'month') {
+            from = new Date(now.getFullYear(), now.getMonth(), 1);
+        }
+        const newFrom = formatDate(from);
+        const newTo = formatDate(now);
+        setTopDate({ from: newFrom, to: newTo });
+        fetchTopDishes(newFrom, newTo);
+    };
 
     return (
         <div style={{ color: '#2c3e50' }}>
-            <Row className="mb-4 g-4">
-                <Col md={6}>
-                    <Card className="shadow-sm border-0 p-3 h-100 bg-white" style={{ borderRadius: '12px', borderLeft: '4px solid #1E3923' }}>
-                        <Card.Body className="p-2">
-                            <span className="text-muted fw-bold" style={{ fontSize: '0.75rem', letterSpacing: '0.5px' }}>TỔNG DOANH THU</span>
-                            <h2 className="fw-bold my-2" style={{ color: '#1E3923' }}>
-                                {Number(stats.tongDoanhThu).toLocaleString()}đ
-                            </h2>
-                            <p className="mb-0 text-success fw-semibold" style={{ fontSize: '0.85rem' }}><FaChartLine /> Cập nhật trực tiếp từ hệ thống</p>
-                        </Card.Body>
-                    </Card>
-                </Col>
-                <Col md={6}>
-                    <Card className="shadow-sm border-0 p-3 h-100 bg-white" style={{ borderRadius: '12px', borderLeft: '4px solid #8B4513' }}>
-                        <Card.Body className="p-2">
-                            <span className="text-muted fw-bold" style={{ fontSize: '0.75rem', letterSpacing: '0.5px' }}>SỐ ĐƠN HÀNG</span>
-                            <h2 className="fw-bold my-2" style={{ color: '#1E3923' }}>
-                                {Number(stats.soDonHang).toLocaleString()}
-                            </h2>
-                            <p className="mb-0 text-muted" style={{ fontSize: '0.85rem' }}><FaBoxOpen /> Tổng số đơn đã hoàn thành</p>
-                        </Card.Body>
-                    </Card>
-                </Col>
-            </Row>
+            {/* ================= PHẦN 1: THỐNG KÊ DOANH THU ================= */}
+            <Card className="shadow-sm border-0 p-3 mb-4 bg-white" style={{ borderRadius: '12px' }}>
+                <div className="d-flex flex-wrap justify-content-between align-items-center gap-3">
+                    <div>
+                        <h5 className="fw-bold mb-1" style={{ color: '#1E3923' }}>Thống Kê Doanh Thu</h5>
+                        <span className="text-muted" style={{ fontSize: '0.85rem' }}>Theo dõi doanh thu và lượng đơn hoàn thành</span>
+                    </div>
+                    <div className="d-flex flex-wrap align-items-center gap-2">
+                        <Button variant="outline-secondary" size="sm" onClick={() => handleQuickRevFilter('today')}>Hôm nay</Button>
+                        <Button variant="outline-secondary" size="sm" onClick={() => handleQuickRevFilter('week')}>Tuần này</Button>
+                        <Button variant="outline-secondary" size="sm" onClick={() => handleQuickRevFilter('month')}>Tháng này</Button>
 
-            <Row className="mb-4">
-                <Col xs={12}>
-                    <Card className="shadow-sm border-0 p-4 bg-white" style={{ borderRadius: '12px' }}>
-                        <h5 className="fw-bold mb-4" style={{ color: '#1E3923' }}>Doanh thu theo tuần</h5>
-                        <div className="d-flex align-items-end justify-content-around" style={{ height: '240px', paddingBottom: '10px', borderBottom: '1px solid #eee' }}>
-                            {stats.doanhThuTuan.map((item, idx) => (
-                                <div key={idx} className="d-flex flex-column align-items-center h-100 justify-content-end" style={{ width: '10%' }}>
-                                    {item.active && (
-                                        <span className="badge mb-2 shadow-sm" style={{ backgroundColor: '#2c3e50', fontSize: '0.65rem' }}>{item.label}</span>
-                                    )}
-                                    <div
-                                        style={{
-                                            width: '100%',
-                                            height: `${item.val}%`,
-                                            backgroundColor: item.active ? '#1E3923' : '#d4ded7',
-                                            borderRadius: '6px 6px 0 0',
-                                            transition: 'height 0.3s'
-                                        }}
-                                    />
+                        <div className="d-flex align-items-center gap-1 ms-lg-2">
+                            <Form.Control
+                                type="date"
+                                size="sm"
+                                value={revDate.from}
+                                onChange={(e) => setRevDate({ ...revDate, from: e.target.value })}
+                            />
+                            <span>-</span>
+                            <Form.Control
+                                type="date"
+                                size="sm"
+                                value={revDate.to}
+                                onChange={(e) => setRevDate({ ...revDate, to: e.target.value })}
+                            />
+                            <Button
+                                variant="success"
+                                size="sm"
+                                style={{ backgroundColor: '#1E3923', borderColor: '#1E3923' }}
+                                onClick={() => fetchRevenue(revDate.from, revDate.to)}
+                            >
+                                <FaFilter className="me-1" /> Lọc
+                            </Button>
+                        </div>
+                    </div>
+                </div>
+            </Card>
+
+            {loadingRev ? (
+                <div className="text-center py-4 mb-4"><Spinner animation="border" variant="success" /></div>
+            ) : (
+                <>
+                    <Row className="mb-4 g-4">
+                        <Col md={6}>
+                            <Card className="shadow-sm border-0 p-3 h-100 bg-white" style={{ borderRadius: '12px', borderLeft: '4px solid #1E3923' }}>
+                                <Card.Body className="p-2">
+                                    <span className="text-muted fw-bold" style={{ fontSize: '0.75rem', letterSpacing: '0.5px' }}>TỔNG DOANH THU</span>
+                                    <h2 className="fw-bold my-2" style={{ color: '#1E3923' }}>
+                                        {Number(revStats.tongDoanhThu).toLocaleString()}đ
+                                    </h2>
+                                    <p className="mb-0 text-success fw-semibold" style={{ fontSize: '0.85rem' }}>
+                                        <FaChartLine /> Tính từ {revDate.from} đến {revDate.to}
+                                    </p>
+                                </Card.Body>
+                            </Card>
+                        </Col>
+                        <Col md={6}>
+                            <Card className="shadow-sm border-0 p-3 h-100 bg-white" style={{ borderRadius: '12px', borderLeft: '4px solid #8B4513' }}>
+                                <Card.Body className="p-2">
+                                    <span className="text-muted fw-bold" style={{ fontSize: '0.75rem', letterSpacing: '0.5px' }}>SỐ ĐƠN HÀNG</span>
+                                    <h2 className="fw-bold my-2" style={{ color: '#1E3923' }}>
+                                        {Number(revStats.soDonHang).toLocaleString()}
+                                    </h2>
+                                    <p className="mb-0 text-muted" style={{ fontSize: '0.85rem' }}>
+                                        <FaBoxOpen /> Tổng số đơn trong khoảng thời gian này
+                                    </p>
+                                </Card.Body>
+                            </Card>
+                        </Col>
+                    </Row>
+
+                    <Row className="mb-4">
+                        <Col xs={12}>
+                            <Card className="shadow-sm border-0 p-4 bg-white" style={{ borderRadius: '12px' }}>
+                                <h6 className="fw-bold mb-4" style={{ color: '#1E3923' }}>Doanh thu các ngày trong tuần</h6>
+                                <div className="d-flex align-items-end justify-content-around" style={{ height: '240px', paddingBottom: '10px', borderBottom: '1px solid #eee' }}>
+                                    {revStats.doanhThuTuan.map((item, idx) => (
+                                        <div key={idx} className="d-flex flex-column align-items-center h-100 justify-content-end" style={{ width: '10%' }}>
+                                            {item.active && (
+                                                <span className="badge mb-2 shadow-sm" style={{ backgroundColor: '#2c3e50', fontSize: '0.65rem' }}>{item.label}</span>
+                                            )}
+                                            <div
+                                                style={{
+                                                    width: '100%',
+                                                    height: `${item.val}%`,
+                                                    backgroundColor: item.active ? '#1E3923' : '#d4ded7',
+                                                    borderRadius: '6px 6px 0 0',
+                                                    transition: 'height 0.3s'
+                                                }}
+                                            />
+                                        </div>
+                                    ))}
                                 </div>
-                            ))}
-                        </div>
-                        <div className="d-flex justify-content-around text-muted pt-2" style={{ fontSize: '0.85rem' }}>
-                            {stats.doanhThuTuan.map((item, idx) => (
-                                <span key={idx} style={{ width: '10%', textAlign: 'center', fontWeight: item.active ? 'bold' : 'normal', color: item.active ? '#1E3923' : '#6c757d' }}>
-                                    {item.day}
-                                </span>
-                            ))}
-                        </div>
-                    </Card>
-                </Col>
-            </Row>
+                                <div className="d-flex justify-content-around text-muted pt-2" style={{ fontSize: '0.85rem' }}>
+                                    {revStats.doanhThuTuan.map((item, idx) => (
+                                        <span key={idx} style={{ width: '10%', textAlign: 'center', fontWeight: item.active ? 'bold' : 'normal', color: item.active ? '#1E3923' : '#6c757d' }}>
+                                            {item.day}
+                                        </span>
+                                    ))}
+                                </div>
+                            </Card>
+                        </Col>
+                    </Row>
+                </>
+            )}
 
+            {/* ================= PHẦN 2: TOP MÓN BÁN CHẠY ================= */}
             <Card className="shadow-sm border-0 p-4 bg-white" style={{ borderRadius: '12px' }}>
-                <h5 className="fw-bold mb-3" style={{ color: '#1E3923' }}>Top Món Ăn Bán Chạy</h5>
-                <Table hover responsive className="align-middle mb-0">
-                    <thead>
-                    <tr className="text-muted" style={{ fontSize: '0.8rem', backgroundColor: '#fcfaf5' }}>
-                        <th className="py-3">STT</th>
-                        <th className="py-3">MÓN ĂN</th>
-                        <th className="py-3 text-center">SỐ LƯỢNG</th>
-                        <th className="py-3 text-end">DOANH THU</th>
-                        <th className="py-3 text-center">TRẠNG THÁI</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    {stats.topMonAn.map((mon) => (
-                        <tr key={mon.id}>
-                            <td className="text-muted fw-bold">{mon.id}</td>
-                            <td><div className="fw-bold" style={{ color: '#1E3923' }}>{mon.name}</div></td>
-                            <td className="text-center fw-semibold">{mon.qty}</td>
-                            <td className="text-end fw-bold text-success">{mon.revenue}</td>
-                            <td className="text-center">
-                                <Badge bg={mon.status === 'Còn món' ? 'success' : 'warning'} text={mon.status === 'Còn món' ? 'white' : 'dark'}>
-                                    {mon.status}
-                                </Badge>
-                            </td>
+                <div className="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-3">
+                    <div>
+                        <h5 className="fw-bold mb-1" style={{ color: '#1E3923' }}>Top Món Ăn Bán Chạy</h5>
+                        <span className="text-muted" style={{ fontSize: '0.85rem' }}>Lọc danh sách món theo thời gian bán</span>
+                    </div>
+                    <div className="d-flex flex-wrap align-items-center gap-2">
+                        <Button variant="outline-secondary" size="sm" onClick={() => handleQuickTopFilter('today')}>Hôm nay</Button>
+                        <Button variant="outline-secondary" size="sm" onClick={() => handleQuickTopFilter('week')}>Tuần này</Button>
+                        <Button variant="outline-secondary" size="sm" onClick={() => handleQuickTopFilter('month')}>Tháng này</Button>
+
+                        <div className="d-flex align-items-center gap-1 ms-lg-2">
+                            <Form.Control
+                                type="date"
+                                size="sm"
+                                value={topDate.from}
+                                onChange={(e) => setTopDate({ ...topDate, from: e.target.value })}
+                            />
+                            <span>-</span>
+                            <Form.Control
+                                type="date"
+                                size="sm"
+                                value={topDate.to}
+                                onChange={(e) => setTopDate({ ...topDate, to: e.target.value })}
+                            />
+                            <Button
+                                variant="success"
+                                size="sm"
+                                style={{ backgroundColor: '#1E3923', borderColor: '#1E3923' }}
+                                onClick={() => fetchTopDishes(topDate.from, topDate.to)}
+                            >
+                                <FaFilter className="me-1" /> Lọc
+                            </Button>
+                        </div>
+                    </div>
+                </div>
+
+                {loadingTop ? (
+                    <div className="text-center py-4"><Spinner animation="border" variant="success" /></div>
+                ) : (
+                    <Table hover responsive className="align-middle mb-0">
+                        <thead>
+                        <tr className="text-muted" style={{ fontSize: '0.8rem', backgroundColor: '#fcfaf5' }}>
+                            <th className="py-3">STT</th>
+                            <th className="py-3">MÓN ĂN</th>
+                            <th className="py-3 text-center">SỐ LƯỢNG</th>
+                            <th className="py-3 text-end">DOANH THU</th>
+                            <th className="py-3 text-center">TRẠNG THÁI</th>
                         </tr>
-                    ))}
-                    </tbody>
-                </Table>
+                        </thead>
+                        <tbody>
+                        {topMonAn.length === 0 ? (
+                            <tr>
+                                <td colSpan="5" className="text-center py-4 text-muted">Không có dữ liệu món bán trong khoảng thời gian này</td>
+                            </tr>
+                        ) : (
+                            topMonAn.map((mon, index) => (
+                                <tr key={mon.id || index}>
+                                    <td className="text-muted fw-bold">{mon.id}</td>
+                                    <td><div className="fw-bold" style={{ color: '#1E3923' }}>{mon.name}</div></td>
+                                    <td className="text-center fw-semibold">{mon.qty}</td>
+                                    <td className="text-end fw-bold text-success">{mon.revenue}</td>
+                                    <td className="text-center">
+                                        <Badge bg={mon.status === 'Còn món' ? 'success' : 'warning'} text={mon.status === 'Còn món' ? 'white' : 'dark'}>
+                                            {mon.status}
+                                        </Badge>
+                                    </td>
+                                </tr>
+                            ))
+                        )}
+                        </tbody>
+                    </Table>
+                )}
             </Card>
         </div>
     );
 }
 
+// TAB 2: Quản lý nhân viên
 function StaffTab() {
     const [nhanVienList, setNhanVienList] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -276,7 +449,6 @@ function MenuTab() {
         catch { alert('Không thể xóa món ăn này'); }
     };
 
-    // 1. Đổi trạng thái KINH DOANH (true: hiện ở menu / false: ẩn hẳn khỏi menu)
     const handleToggleDangKinhDoanh = async (mon) => {
         const id = mon.maMon ?? mon.MaMon;
         const currentStatus = mon.dangKinhDoanh ?? mon.DangKinhDoanh ?? false;
@@ -297,7 +469,6 @@ function MenuTab() {
         }
     };
 
-    // 2. Đổi trạng thái TẠM HẾT (true: khóa nút đặt ở menu / false: đặt bình thường)
     const handleToggleTamHet = async (mon) => {
         const id = mon.maMon ?? mon.MaMon;
         const currentTamHet = mon.tamHet ?? mon.TamHet ?? false;
@@ -352,8 +523,6 @@ function MenuTab() {
                                     <td className="fw-bold">{mon.tenMon ?? mon.TenMon}</td>
                                     <td>{mon.tenNhom ?? mon.TenNhom}</td>
                                     <td>{(mon.giaTien ?? mon.GiaTien)?.toLocaleString()} đ</td>
-
-                                    {/* Nút 1: Đang kinh doanh / Ngừng kinh doanh */}
                                     <td className="text-center">
                                         <Button
                                             size="sm"
@@ -365,8 +534,6 @@ function MenuTab() {
                                             {isDangKinhDoanh ? "Đang mở bán" : "Đã ngừng bán"}
                                         </Button>
                                     </td>
-
-                                    {/* Nút 2: Còn món / Tạm hết */}
                                     <td className="text-center">
                                         <Button
                                             size="sm"
@@ -379,7 +546,6 @@ function MenuTab() {
                                             {isTamHet ? "✕ Tạm hết" : "✓ Còn món"}
                                         </Button>
                                     </td>
-
                                     <td className="text-center">
                                         <Button variant="outline-primary" size="sm" className="me-2"
                                                 onClick={() => { setEditingItem(mon); setShowModal(true); }}><FaEdit /></Button>
@@ -398,6 +564,7 @@ function MenuTab() {
     );
 }
 
+// TAB 4: Quản lý bàn ăn
 function TableTab() {
     const [tableList, setTableList] = useState([]);
     const [loading, setLoading] = useState(true);

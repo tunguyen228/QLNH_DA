@@ -1,8 +1,9 @@
-using Microsoft.AspNetCore.Mvc;
+using System;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using QLNH_Backend.BLL;
 using QLNH_Backend.DTO;
-using Microsoft.AspNetCore.SignalR;
 using QLNH_Backend.Hubs;
 
 namespace QLNH_Backend.Controllers
@@ -23,27 +24,42 @@ namespace QLNH_Backend.Controllers
         [HttpPost]
         public async Task<IActionResult> ProcessCheckout([FromBody] CheckoutRequestDTO request)
         {
-            var result = await _checkoutService.ProcessCheckoutAsync(request);
-            
-            if (result.Success)
+            if (!ModelState.IsValid)
             {
-                await _hubContext.Clients.All.SendAsync("ThanhToanThanhCong");
-                return Ok(result); // Trả về HTTP 200 kèm DTO
+                return BadRequest(new { success = false, message = "Dữ liệu gửi lên không hợp lệ." });
             }
-            
-            return BadRequest(result); // Trả về HTTP 400 kèm câu thông báo lỗi
+
+            try
+            {
+                var result = await _checkoutService.ProcessCheckoutAsync(request);
+                
+                if (result.Success)
+                {
+                    // Truyền thêm MaBan để các client/bồi bàn cập nhật sơ đồ bàn ngay lập tức
+                    await _hubContext.Clients.All.SendAsync("ThanhToanThanhCong", request.MaBan);
+                    return Ok(result);
+                }
+                
+                return BadRequest(result);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { success = false, message = ex.Message });
+            }
         }
+
         [HttpGet("thungan/{id}")]
         public async Task<IActionResult> GetCashierInfo(int id)
         {
             try
             {
                 var cashier = await _checkoutService.GetCashierByIdAsync(id);
-                if (cashier == null) return NotFound(new { message = "Không tìm thấy thu ngân" });
+                if (cashier == null) 
+                    return NotFound(new { message = "Không tìm thấy thu ngân" });
         
                 return Ok(cashier);
             }
-            catch (System.Exception ex)
+            catch (Exception ex)
             {
                 return StatusCode(500, new { message = ex.Message });
             }
