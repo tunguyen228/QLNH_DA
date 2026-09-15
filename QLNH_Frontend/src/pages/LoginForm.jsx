@@ -11,7 +11,6 @@ const LoginForm = () => {
     const [error, setError] = useState('');
     const navigate = useNavigate();
     const [showPassword, setShowPassword] = useState(false);
-
     const handleLogin = async (e) => {
         e.preventDefault();
         setError('');
@@ -20,28 +19,24 @@ const LoginForm = () => {
                 username,
                 password
             });
-
             const { token, hoTen, role, maNv } = response.data;
-
             localStorage.setItem('token', token);
             localStorage.setItem('hoTen', hoTen);
             localStorage.setItem('role', role);
             localStorage.setItem('maNv', maNv);
-            
             if (role === 'Phục vụ') {
                 navigate('/phuc-vu');
             } else if (role=== 'Bếp') {
                 navigate('/bep');
             } else if(role === 'Thu ngân') {
                 navigate('/thu-ngan');
-            } else if (role === 'Quản lý') { // Thêm dòng này để nhận diện quyền quản lý
+            } else if (role === 'Quản lý') { 
                 navigate('/quan-ly');
             } else {
                 navigate('/');
             }
         } catch (err) {
             console.error("Chi tiết lỗi JS/Network:", err);
-            
             if (err.response && err.response.status === 401) {
                 setError('Tài khoản hoặc mật khẩu không chính xác.');
             } else {
@@ -49,11 +44,9 @@ const LoginForm = () => {
             }
         }
     };
-
     const togglePasswordVisibility = () => {
         setShowPassword(!showPassword);
     };
-
     const styles = {
         container: {
             backgroundColor: '#F9F8F3',
@@ -89,15 +82,12 @@ const LoginForm = () => {
         <Container fluid className="d-flex align-items-center justify-content-center p-0" style={styles.container}>
             <Row className="w-100 m-0 justify-content-center">
                 <Col xs={11} sm={8} md={6} lg={5} xl={4} className="d-flex flex-column p-4 p-md-5 shadow-sm" style={styles.formBox}>
-
                     <div className="mx-auto w-100" style={{ maxWidth: '400px' }}>
                         <h2 className="fw-bold mb-2" style={{ color: '#1E3923' }}>Đăng nhập hệ thống</h2>
                         <p className="mb-4" style={{ color: '#666', fontSize: '0.95rem' }}>
                             Chào mừng trở lại, vui lòng điền thông tin để tiếp tục.
                         </p>
-
                         {error && <Alert variant="danger">{error}</Alert>}
-
                         <Form onSubmit={handleLogin}>
                             <Form.Group className="mb-4" controlId="formUsername">
                                 <Form.Label className="fw-bold text-uppercase" style={{ fontSize: '0.8rem', color: '#555' }}>
@@ -116,7 +106,6 @@ const LoginForm = () => {
                                     />
                                 </InputGroup>
                             </Form.Group>
-
                             <Form.Group className="mb-5" controlId="formPassword">
                                 <Form.Label className="fw-bold text-uppercase" style={{ fontSize: '0.8rem', color: '#555' }}>
                                     Mật khẩu
@@ -140,11 +129,9 @@ const LoginForm = () => {
                                     </InputGroup.Text>
                                 </InputGroup>
                             </Form.Group>
-
                             <Button variant="success" type="submit" className="w-100 mb-4 d-flex justify-content-center align-items-center gap-2" style={styles.submitButton}>
                                 ĐĂNG NHẬP <ArrowRight size={18} />
                             </Button>
-
                             <div className="text-center mb-4">
                                 <span style={styles.textSmall}>Gặp sự cố khi đăng nhập? </span>
                                 <a href="#" className="text-decoration-none fw-bold" style={{ color: '#C44536', fontSize: '0.85rem' }}>
@@ -153,8 +140,6 @@ const LoginForm = () => {
                             </div>
                         </Form>
                     </div>
-
-                    {/* Footer */}
                     <div className="d-flex flex-column flex-sm-row justify-content-between mt-auto pt-4 border-top" style={styles.textSmall}>
                         <span className="mb-2 mb-sm-0">© 2026</span>
                         <div className="d-flex gap-4">
@@ -162,7 +147,6 @@ const LoginForm = () => {
                             <a href="#" className="text-decoration-none text-muted">HỖ TRỢ</a>
                         </div>
                     </div>
-
                 </Col>
             </Row>
         </Container>

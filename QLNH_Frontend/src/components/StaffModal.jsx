@@ -1,9 +1,7 @@
-// File: components/StaffModal.jsx
 import React, { useState, useEffect } from 'react';
 import { Modal, Form, Button } from 'react-bootstrap';
 
 const CHUC_VU_OPTIONS = ['Phục vụ', 'Bếp', 'Thu ngân', 'Quản lý'];
-
 export default function StaffModal({ show, onHide, onSave, editingStaff }) {
     const [form, setForm] = useState({ hoTen: '', chucVu: 'Phục vụ', sdt: '', email: '', trangThai: 'Đang làm' });
     const [saving, setSaving] = useState(false);
@@ -23,7 +21,6 @@ export default function StaffModal({ show, onHide, onSave, editingStaff }) {
         }
         setError('');
     }, [editingStaff, show]);
-
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (!form.hoTen.trim() || !form.sdt.trim()) {

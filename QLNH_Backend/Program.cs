@@ -7,7 +7,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using QLNH_Backend.DAL;
 using QLNH_Backend.BLL;
-using QLNH_Backend.Hubs; // ---> THÊM DÒNG NÀY ĐỂ NHẬN DIỆN HUB
+using QLNH_Backend.Hubs; 
 
 var builder = WebApplication.CreateBuilder(args);
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
@@ -52,9 +52,7 @@ builder.Services.AddAuthentication(options =>
 });
 
 builder.Services.AddAuthorization();
-
 builder.Services.AddSignalR(); 
-
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowReactApp", policy =>
@@ -76,15 +74,9 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-// 1. Đặt UseCors ngay đầu pipeline (trước Auth và Endpoints)
 app.UseCors("AllowReactApp");
-
-// 2. Authentication & Authorization
 app.UseAuthentication(); 
 app.UseAuthorization();
-
-// 3. Map Endpoints
 app.MapControllers();
 app.MapHub<NotificationHub>("/notificationHub"); 
-
 app.Run();

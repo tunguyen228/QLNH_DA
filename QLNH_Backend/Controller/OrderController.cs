@@ -20,7 +20,6 @@ namespace QLNH_Backend.Controllers
         private readonly IBepService _bepService;
         private readonly AppDbContext _context;
         private readonly IHubContext<NotificationHub> _hubContext;
-
         public OrderController(IBepService bepService, AppDbContext context, IHubContext<NotificationHub> hubContext)
         {
             _bepService = bepService;
@@ -32,29 +31,22 @@ namespace QLNH_Backend.Controllers
         public async Task<IActionResult> GetDanhSachOrder()
         {
             var today = DateTime.SpecifyKind(DateTime.UtcNow.Date, DateTimeKind.Utc);
-
             var orders = await _context.PhieuGois
                 .Where(p => p.ThoiGianTao >= today || p.TrangThai != "Đã thanh toán")
                 .OrderByDescending(p => p.MaPhieu)
                 .ToListAsync();
-
             if (!orders.Any())
             {
                 return Ok(new List<object>());
             }
-
             var orderIds = orders.Select(o => o.MaPhieu).ToList();
-
             var chiTiets = await _context.ChiTietPhieuGois
                 .Where(ct => orderIds.Contains(ct.MaPhieu))
                 .ToListAsync();
-
             var monAnIds = chiTiets.Select(ct => ct.MaMon).Distinct().ToList();
-
             var monAns = await _context.MonAns
                 .Where(m => monAnIds.Contains(m.MaMon))
                 .ToListAsync();
-
             var result = orders.Select(p =>
             {
                 var chiTietPhieu = chiTiets
@@ -72,7 +64,6 @@ namespace QLNH_Backend.Controllers
                             gia = mon != null ? mon.GiaTien : 0
                         };
                     }).ToList();
-
                 return new
                 {
                     maPhieu = p.MaPhieu,
@@ -84,7 +75,6 @@ namespace QLNH_Backend.Controllers
             })
             .Where(o => o.chiTiet.Any())
             .ToList();
-
             return Ok(result);
         }
 
@@ -97,7 +87,6 @@ namespace QLNH_Backend.Controllers
                 await _hubContext.Clients.All.SendAsync("MonDaDuocPhucVu");
                 return Ok(new { message = "Đã phục vụ món thành công" });
             }
-
             return BadRequest("Không tìm thấy món ăn trong phiếu gọi.");
         }
 
@@ -107,14 +96,11 @@ namespace QLNH_Backend.Controllers
             var phieuGois = await _context.PhieuGois
                 .Where(p => p.MaBan == maBan && p.TrangThai != "Đã thanh toán")
                 .ToListAsync();
-
             if (!phieuGois.Any())
             {
                 return NotFound(new { message = "Bàn chưa có phiếu gọi để thanh toán" });
             }
-
             var phieuGoiIds = phieuGois.Select(p => p.MaPhieu).ToList();
-
             var chiTietRaw = await _context.ChiTietPhieuGois
                 .Where(ct => phieuGoiIds.Contains(ct.MaPhieu))
                 .Select(ct => new
@@ -125,7 +111,6 @@ namespace QLNH_Backend.Controllers
                     gia = _context.MonAns.FirstOrDefault(m => m.MaMon == ct.MaMon).GiaTien
                 })
                 .ToListAsync();
-
             var result = chiTietRaw
                 .GroupBy(c => new { c.maMon, c.tenMon, c.gia })
                 .Select(g => new
@@ -136,7 +121,6 @@ namespace QLNH_Backend.Controllers
                     price = g.Key.gia,
                     total = g.Sum(c => c.soLuong) * g.Key.gia
                 }).ToList();
-
             return Ok(result);
         }
         
@@ -147,13 +131,11 @@ namespace QLNH_Backend.Controllers
             {
                 return BadRequest(new { message = "Giỏ hàng trống hoặc dữ liệu không hợp lệ." });
             }
-
             var ban = await _context.BanAns.FirstOrDefaultAsync(b => b.MaBan == request.MaBan);
             if (ban == null)
             {
                 return NotFound(new { message = "Không tìm thấy bàn ăn tương ứng." });
             }
-
             var phieuGoi = new PhieuGoi
             {
                 MaBan = request.MaBan,
@@ -168,14 +150,10 @@ namespace QLNH_Backend.Controllers
                     TrangThai = "ChoCheBien" 
                 }).ToList()
             };
-
             _context.PhieuGois.Add(phieuGoi);
             ban.TrangThai = "Đang phục vụ";
-
             await _context.SaveChangesAsync();
-
             await _hubContext.Clients.All.SendAsync("NewOrderToKitchen");
-
             return Ok(new { 
                 success = true, 
                 message = "Đặt món thành công!", 

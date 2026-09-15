@@ -1,11 +1,10 @@
 using Microsoft.EntityFrameworkCore;
 using QLNH_Backend.Models;
 using QLNH_Backend.DTO;
-using QLNH_Backend.DAL; // hoặc namespace chứa AppDbContext / QLNHContext
+using QLNH_Backend.DAL; 
 
 namespace QLNH_Backend.DAL
 {
-    // File: DAL/Repositories/MonAnRepository.cs
     public interface IMonAnRepository
     {
         Task<List<MonAn>> GetAllAsync();

@@ -13,39 +13,28 @@ namespace QLNH_Backend.Controller
     public class DashboardController : ControllerBase
     {
         private readonly AppDbContext _context;
-
         public DashboardController(AppDbContext context)
         {
             _context = context;
         }
-
-        // Helper chuẩn hóa DateTime sang UTC hoàn toàn để Npgsql không báo lỗi
         private (DateTime start, DateTime end) GetDateRange(DateTime? from, DateTime? to)
         {
             var f = from ?? DateTime.UtcNow.AddDays(-6);
             var t = to ?? DateTime.UtcNow;
-
-            // Tạo DateTime mới và gắn cờ DateTimeKind.Utc rõ ràng
             var startUtc = DateTime.SpecifyKind(new DateTime(f.Year, f.Month, f.Day, 0, 0, 0, DateTimeKind.Utc), DateTimeKind.Utc);
             var endUtc = DateTime.SpecifyKind(new DateTime(t.Year, t.Month, t.Day, 23, 59, 59, 999, DateTimeKind.Utc), DateTimeKind.Utc);
-
             return (startUtc, endUtc);
         }
-
-        // API 1: Thống kê Doanh thu
+        
         [HttpGet("revenue")]
         public async Task<IActionResult> GetRevenueStats([FromQuery] DateTime? from, [FromQuery] DateTime? to)
         {
             try
             {
                 var (startDate, endDate) = GetDateRange(from, to);
-
-                // 1. Tổng số đơn hàng trong khoảng thời gian
                 int totalOrders = await _context.HoaDons
                     .Where(h => h.ThoiGianRa >= startDate && h.ThoiGianRa <= endDate)
                     .CountAsync();
-
-                // 2. Lấy dữ liệu hóa đơn về bộ nhớ
                 var billsInRange = await _context.HoaDons
                     .Where(h => h.ThoiGianRa >= startDate && h.ThoiGianRa <= endDate)
                     .Select(h => new
@@ -54,10 +43,7 @@ namespace QLNH_Backend.Controller
                         DoanhThuDon = h.ChiTietHoaDons.Sum(ct => (decimal?)ct.SoLuong * ct.DonGia) ?? 0m
                     })
                     .ToListAsync();
-
                 decimal totalRevenue = billsInRange.Sum(b => b.DoanhThuDon);
-
-                // 3. Phân bổ doanh thu theo ngày trong tuần
                 var weeklyDict = new Dictionary<DayOfWeek, decimal>
                 {
                     { DayOfWeek.Monday, 0m },
@@ -68,7 +54,6 @@ namespace QLNH_Backend.Controller
                     { DayOfWeek.Saturday, 0m },
                     { DayOfWeek.Sunday, 0m }
                 };
-
                 foreach (var bill in billsInRange)
                 {
                     var day = bill.ThoiGianRa.DayOfWeek;
@@ -77,7 +62,6 @@ namespace QLNH_Backend.Controller
                         weeklyDict[day] += bill.DoanhThuDon;
                     }
                 }
-
                 var dayNameMapping = new Dictionary<DayOfWeek, string>
                 {
                     { DayOfWeek.Monday, "Thứ 2" },
@@ -88,22 +72,17 @@ namespace QLNH_Backend.Controller
                     { DayOfWeek.Saturday, "Thứ 7" },
                     { DayOfWeek.Sunday, "Chủ nhật" }
                 };
-
                 decimal maxWeekVal = weeklyDict.Values.DefaultIfEmpty(1m).Max();
                 if (maxWeekVal <= 0) maxWeekVal = 1m;
-
                 var todayDayOfWeek = DateTime.Today.DayOfWeek;
                 var weeklyData = new List<object>();
-
                 foreach (var kv in weeklyDict)
                 {
                     int percentVal = (int)((kv.Value / maxWeekVal) * 100);
                     if (percentVal < 15) percentVal = 15;
-
                     string formattedLabel = kv.Value >= 1000000
                         ? $"{kv.Value / 1000000m:0.#}M"
                         : $"{kv.Value:N0}đ";
-
                     weeklyData.Add(new
                     {
                         day = dayNameMapping[kv.Key],
@@ -112,7 +91,6 @@ namespace QLNH_Backend.Controller
                         active = kv.Key == todayDayOfWeek
                     });
                 }
-
                 return Ok(new
                 {
                     tongDoanhThu = totalRevenue,
@@ -126,15 +104,13 @@ namespace QLNH_Backend.Controller
                 return StatusCode(500, new { message = ex.Message, detail = ex.InnerException?.Message });
             }
         }
-
-        // API 2: Lọc Top món ăn bán chạy
+        
         [HttpGet("top-dishes")]
         public async Task<IActionResult> GetTopDishes([FromQuery] DateTime? from, [FromQuery] DateTime? to)
         {
             try
             {
                 var (startDate, endDate) = GetDateRange(from, to);
-
                 var rawItems = await _context.ChiTietHoaDons
                     .Where(ct => ct.MaHoaDonNavigation != null 
                               && ct.MaHoaDonNavigation.ThoiGianRa >= startDate 
@@ -148,9 +124,7 @@ namespace QLNH_Backend.Controller
                         ct.DonGia
                     })
                     .ToListAsync();
-
                 var topDishes = new List<object>();
-
                 if (rawItems.Any())
                 {
                     var grouped = rawItems
@@ -165,14 +139,12 @@ namespace QLNH_Backend.Controller
                         .OrderByDescending(x => x.TongSoLuong)
                         .Take(5)
                         .ToList();
-
                     int stt = 1;
                     foreach (var item in grouped)
                     {
                         string revString = item.TongTien >= 1000000
                             ? $"{item.TongTien / 1000000m:0.##}M"
                             : $"{item.TongTien:N0}đ";
-
                         topDishes.Add(new
                         {
                             id = stt < 10 ? $"0{stt}" : stt.ToString(),
@@ -185,7 +157,6 @@ namespace QLNH_Backend.Controller
                         stt++;
                     }
                 }
-
                 if (topDishes.Count == 0 && _context.MonAns != null)
                 {
                     var fallbackDishes = await _context.MonAns.Take(5).ToListAsync();
@@ -204,7 +175,6 @@ namespace QLNH_Backend.Controller
                         stt++;
                     }
                 }
-
                 return Ok(topDishes);
             }
             catch (Exception ex)
@@ -213,17 +183,14 @@ namespace QLNH_Backend.Controller
                 return StatusCode(500, new { message = ex.Message, detail = ex.InnerException?.Message });
             }
         }
-
-        // Endpoint tương thích ngược
+        
         [HttpGet("stats")]
         public async Task<IActionResult> GetDashboardStats()
         {
             var revResult = await GetRevenueStats(null, null) as OkObjectResult;
             var topResult = await GetTopDishes(null, null) as OkObjectResult;
-
             dynamic revData = revResult?.Value;
             var topDishes = topResult?.Value;
-
             return Ok(new
             {
                 tongDoanhThu = revData?.tongDoanhThu ?? 0,

@@ -9,12 +9,9 @@ const TheoDoiMon = () => {
     const [orders, setOrders] = useState([]);
     const [currentTime, setCurrentTime] = useState(new Date());
     const { markAllAsRead } = useNotifications();
-
-    // Vào tab này thì coi như đã xem hết thông báo -> tắt chấm đỏ trên Sidebar
     useEffect(() => {
         markAllAsRead();
     }, [markAllAsRead]);
-
     useEffect(() => {
         const timer = setInterval(() => {
             const now = new Date();
@@ -25,11 +22,9 @@ const TheoDoiMon = () => {
         }, 60000);
         return () => clearInterval(timer);
     }, []);
-
     useEffect(() => {
         fetchOrders();
     }, []);
-
     const fetchOrders = async () => {
         try {
             const response = await axios.get('http://localhost:5000/api/order/danhsach');
@@ -38,15 +33,12 @@ const TheoDoiMon = () => {
             console.error("Lỗi khi tải danh sách đơn:", error);
         }
     };
-
     useEffect(() => {
         const connection = new HubConnectionBuilder()
             .withUrl("http://localhost:5000/notificationHub")
             .withAutomaticReconnect()
             .build();
-
         connection.start().catch(err => console.error("SignalR Error: ", err));
-
         connection.on("DishStatusUpdated", (data) => {
             setOrders(prevOrders => prevOrders.map(order => {
                 if (order.maPhieu === data.maPhieu) {
@@ -60,10 +52,8 @@ const TheoDoiMon = () => {
                 return order;
             }));
         });
-
         return () => connection.stop();
     }, []);
-
     const handleServeDish = async (maPhieu, maMon) => {
         try {
             await axios.put(`http://localhost:5000/api/order/${maPhieu}/mon/${maMon}/serve`);
@@ -82,19 +72,15 @@ const TheoDoiMon = () => {
             console.error("Lỗi:", error);
         }
     };
-
     const formatCurrency = (amount) => {
         return new Intl.NumberFormat('vi-VN').format(amount || 0) + ' đ';
     };
-
     const calculateWaitTime = (thoiGianGoi) => {
         if (!thoiGianGoi) return 0;
         const diffMs = currentTime - new Date(thoiGianGoi);
         return Math.floor(diffMs / 60000);
     };
-
     const READY_STATUSES = ['HoanThanh', 'DaXong'];
-
     const getStatusInfo = (trangThai) => {
         switch (trangThai) {
             case 'ChoCheBien':
@@ -110,13 +96,12 @@ const TheoDoiMon = () => {
                 return { label: trangThai, icon: null, className: '' };
         }
     };
-
+    
     return (
         <div className="order-management-container">
             <div className="header-section">
                 <h2>Quản lý Order</h2>
             </div>
-
             <div className="orders-grid">
                 {orders.map((order) => {
                     const isFullyServed = order.chiTiet.every(m => m.trangThai === 'DaPhucVu');
@@ -139,7 +124,6 @@ const TheoDoiMon = () => {
                                 </div>
                                 <div className="table-badge">Bàn {order.tenBan}</div>
                             </div>
-
                             <div className="order-items">
                                 {order.chiTiet.map((mon, index) => {
                                     const isServed = mon.trangThai === 'DaPhucVu';
@@ -178,7 +162,6 @@ const TheoDoiMon = () => {
                                     )
                                 })}
                             </div>
-
                             <div className="order-footer">
                                 <span className="footer-label">Tạm tính:</span>
                                 <span className="total-amount">{formatCurrency(order.tongTien)}</span>

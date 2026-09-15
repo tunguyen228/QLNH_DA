@@ -13,13 +13,11 @@ const KitchenOrderCard = ({ order, status, onActionClick, onReportMissingIngredi
                         <div className="text-muted fw-medium" style={{ fontSize: '14px' }}>
                             <i className="bi bi-geo-alt me-1"></i> Bàn: {order.tenBan}
                         </div>
-
-                        {/* GHI CHÚ: Tinh chỉnh lại UI cho nổi bật hơn trên màn hình bếp */}
                         {order.ghiChu && (
                             <div className="mt-2 text-danger fw-bold"
                                  style={{
                                      fontSize: '13px',
-                                     backgroundColor: '#fff3cd', // Nền vàng cảnh báo
+                                     backgroundColor: '#fff3cd', 
                                      padding: '4px 8px',
                                      borderRadius: '4px',
                                      display: 'inline-block'

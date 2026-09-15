@@ -15,7 +15,6 @@ namespace QLNH_Backend.BLL
     {
         private readonly INhanVienRepository _repo;
         public NhanVienService(INhanVienRepository repo) => _repo = repo;
-
         private static NhanVienDTO ToDTO(NhanVien nv) => new NhanVienDTO
         {
             MaNV = nv.MaNv,
@@ -23,16 +22,13 @@ namespace QLNH_Backend.BLL
             VaiTro = nv.VaiTro,
             TrangThaiHoatDong = nv.TrangThaiHoatDong
         };
-
         public async Task<List<NhanVienDTO>> GetAllAsync() =>
             (await _repo.GetAllAsync()).Select(ToDTO).ToList();
-
         public async Task<NhanVienDTO> GetByIdAsync(int id)
         {
             var nv = await _repo.GetByIdAsync(id);
             return nv == null ? null : ToDTO(nv);
         }
-
         public async Task<NhanVienDTO> CreateAsync(NhanVienRequestDTO dto)
         {
             var nv = new NhanVien
@@ -46,12 +42,10 @@ namespace QLNH_Backend.BLL
             await _repo.AddAsync(nv);
             return ToDTO(nv);
         }
-
         public async Task<bool> UpdateAsync(int id, NhanVienRequestDTO dto)
         {
             var nv = await _repo.GetByIdAsync(id);
             if (nv == null) return false;
-            
             nv.TenDangNhap = dto.TenDangNhap;
             if (!string.IsNullOrEmpty(dto.MatKhau))
             {
@@ -60,10 +54,8 @@ namespace QLNH_Backend.BLL
             nv.HoTen = dto.HoTen;
             nv.VaiTro = dto.VaiTro;
             nv.TrangThaiHoatDong = dto.TrangThaiHoatDong;
-
             return await _repo.UpdateAsync(nv);
         }
-
         public Task<bool> DeleteAsync(int id) => _repo.DeleteAsync(id);
     }
 }

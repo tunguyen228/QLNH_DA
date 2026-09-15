@@ -5,10 +5,8 @@ namespace QLNH_Backend.DTO
         public int MaBan { get; set; }
         public string? SoDienThoai { get; set; }
         public string? MaKhuyenMai { get; set; }
-        public string PhuongThucTt { get; set; } // "CASH", "QR", "CARD"
+        public string PhuongThucTt { get; set; } /
     }
-
-// DTO/CheckoutResponseDTO.cs
     public class CheckoutResponseDTO
     {
         public bool Success { get; set; }
@@ -17,4 +15,3 @@ namespace QLNH_Backend.DTO
         public int EarnedPoints { get; set; }
     }
 }
-

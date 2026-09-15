@@ -10,27 +10,20 @@ const Checkout = () => {
     const navigate = useNavigate();
     const { addToast } = useToast();
     const { checkoutRefreshTrigger } = useNotifications();
-
     const [step, setStep] = useState(1);
     const [paymentMethod, setPaymentMethod] = useState('qr');
-
     const [tables, setTables] = useState([]);
     const [selectedTable, setSelectedTable] = useState('');
     const [orderItems, setOrderItems] = useState([]);
-
     const [loadingTables, setLoadingTables] = useState(false);
     const [loadingOrder, setLoadingOrder] = useState(false);
-
     const [isGeneratingInvoice, setIsGeneratingInvoice] = useState(false);
     const [invoiceCode, setInvoiceCode] = useState('');
     const [isProcessing, setIsProcessing] = useState(false);
-
     const [tenThuNgan] = useState(localStorage.getItem('hoTen') || 'Thu Ngân');
-
     const BANK_ID = "MB";
     const ACCOUNT_NO = "1234567890";
     const ACCOUNT_NAME = "NGUYEN THI CAM TU";
-
     const fetchTables = async () => {
         setLoadingTables(true);
         try {
@@ -43,23 +36,19 @@ const Checkout = () => {
             setLoadingTables(false);
         }
     };
-
     useEffect(() => {
         fetchTables();
     }, []);
-
     useEffect(() => {
         if (checkoutRefreshTrigger > 0) {
             fetchTables();
         }
     }, [checkoutRefreshTrigger]);
-
     useEffect(() => {
         if (!selectedTable) {
             setOrderItems([]);
             return;
         }
-
         const fetchOrderDetails = async () => {
             setLoadingOrder(true);
             try {
@@ -73,12 +62,10 @@ const Checkout = () => {
         };
         fetchOrderDetails();
     }, [selectedTable]);
-
     const subTotal = orderItems.reduce((sum, item) => sum + (item.price * item.qty), 0);
     const vat = Math.round(subTotal * 0.1);
     const discount = 0;
     const grandTotal = subTotal + vat - discount;
-
     const handleProceedToPayment = async () => {
         if (!selectedTable || orderItems.length === 0) return;
         setIsGeneratingInvoice(true);
@@ -92,7 +79,6 @@ const Checkout = () => {
             setIsGeneratingInvoice(false);
         }
     };
-
     const handleConfirmPayment = async () => {
         setIsProcessing(true);
         try {
@@ -102,9 +88,7 @@ const Checkout = () => {
                 SoDienThoai: "",
                 PhuongThucTt: phuongThuc
             };
-
             const result = await checkoutService.processCheckout(payload);
-
             if (result.success || result.Success) {
                 addToast("Thanh toán thành công!", "success");
                 setStep(1);
@@ -120,11 +104,10 @@ const Checkout = () => {
             setIsProcessing(false);
         }
     };
-
     const addInfo = encodeURIComponent(`Thanh toan HD ${invoiceCode}`);
     const accountNameEncoded = encodeURIComponent(ACCOUNT_NAME);
     const vietQrUrl = `https://img.vietqr.io/image/${BANK_ID}-${ACCOUNT_NO}-compact2.png?amount=${grandTotal}&addInfo=${addInfo}&accountName=${accountNameEncoded}`;
-
+    
     return (
         <Container fluid className="p-0 overflow-hidden d-flex flex-column h-100" style={{ fontSize: '0.8rem' }}>
             <div className="flex-grow-1 overflow-hidden">
@@ -178,10 +161,8 @@ const Checkout = () => {
                                 </Table>
                             </div>
                         </Col>
-
                         <Col md={4} className="bg-white d-flex flex-column h-100 shadow-sm p-4">
                             <h5 className="fw-bold mb-4 text-success">Thông tin thanh toán</h5>
-
                             <Form.Group className="mb-4">
                                 <Form.Label className="fw-bold small text-muted">MÃ GIẢM GIÁ</Form.Label>
                                 <InputGroup>
@@ -189,12 +170,10 @@ const Checkout = () => {
                                     <Button variant="outline-success">Áp dụng</Button>
                                 </InputGroup>
                             </Form.Group>
-
                             <hr className="text-muted" />
                             <div className="mb-2 d-flex justify-content-between"><span className="text-muted">Tạm tính</span><strong>{subTotal.toLocaleString()}đ</strong></div>
                             <div className="mb-2 d-flex justify-content-between"><span className="text-muted">Thuế VAT (10%)</span><strong>{vat.toLocaleString()}đ</strong></div>
                             <div className="mb-4 d-flex justify-content-between text-success"><span>Khuyến mãi</span><strong>- {discount}đ</strong></div>
-
                             <div className="mt-auto pt-3 border-top">
                                 <div className="d-flex justify-content-between align-items-end mb-4">
                                     <span className="fw-bold text-muted">TỔNG THANH TOÁN</span>
@@ -218,7 +197,6 @@ const Checkout = () => {
                             <Button variant="link" className="text-decoration-none text-muted p-0 mb-3 text-start fw-bold" onClick={() => setStep(1)}>
                                 <ArrowLeft className="me-2" /> Quay lại đơn hàng
                             </Button>
-
                             <Row className="g-3 mb-3">
                                 <Col>
                                     <Card className={`text-center py-3 cursor-pointer border-2 ${paymentMethod === 'cash' ? 'border-success bg-success bg-opacity-10 text-success' : 'border-light'}`} onClick={() => setPaymentMethod('cash')}>
@@ -239,7 +217,6 @@ const Checkout = () => {
                                     </Card>
                                 </Col>
                             </Row>
-
                             {paymentMethod === 'qr' && (
                                 <Card className="border-0 shadow-sm text-center p-3 flex-grow-1 d-flex flex-column justify-content-center align-items-center bg-light rounded-4">
                                     <div className="bg-white p-2 rounded-4 mb-3 shadow-sm">
@@ -250,12 +227,10 @@ const Checkout = () => {
                                     <small className="text-muted mt-1">Đang chờ khách hàng thanh toán...</small>
                                 </Card>
                             )}
-
                             <Button variant="success" size="lg" className="w-100 fw-bold mt-3 shadow-sm" onClick={handleConfirmPayment} disabled={isProcessing}>
                                 {isProcessing ? <><Spinner animation="border" size="sm" className="me-2"/> Đang xử lý...</> : <><Printer className="me-2" /> Xác nhận & In hóa đơn</>}
                             </Button>
                         </Col>
-
                         <Col md={5} className="bg-light border-start p-4 h-100 overflow-auto">
                             <h6 className="fw-bold mb-3 text-center text-muted">Xem trước hóa đơn</h6>
                             <Card className="border-0 shadow-sm p-4" style={{ fontFamily: 'monospace', fontSize: '0.9rem' }}>

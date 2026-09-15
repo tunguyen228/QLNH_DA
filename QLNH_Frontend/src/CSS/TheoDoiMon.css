@@ -1,4 +1,3 @@
-/* Kế thừa màu nền từ layout tổng */
 .order-management-container {
     padding: 30px;
     min-height: 100vh;
@@ -115,7 +114,6 @@
     margin-top: 2px;
 }
 
-/* Xóa khối .item-status cũ (không còn dùng), thay bằng badge trạng thái */
 .item-status-badge {
     display: inline-flex;
     align-items: center;
@@ -132,31 +130,26 @@
     font-size: 11px;
 }
 
-/* Chờ chế biến */
 .status-cho-che-bien {
     background-color: #fdecea;
     color: #dc3545;
 }
 
-/* Đang chế biến - tông terracotta cho hợp bảng màu */
 .status-dang-che-bien {
     background-color: #f7e9e2;
     color: #c0603f;
 }
 
-/* Đã chế biến xong - tông forest green đồng bộ với order-id / table-badge */
 .status-da-xong {
     background-color: #e8f0e9;
     color: #2b5c38;
 }
 
-/* Đã phục vụ */
 .status-da-phuc-vu {
     background-color: #f0f0f0;
     color: #b0b0b0;
 }
 
-/* Kiểu dáng khi món đã được phục vụ */
 .text-served {
     color: #c4c4c4 !important;
     text-decoration: line-through;
@@ -181,7 +174,6 @@
     background: #c4c4c4;
 }
 
-/* Custom Checkbox */
 .serve-checkbox {
     width: 20px;
     height: 20px;

@@ -14,7 +14,6 @@ namespace QLNH_Backend.Controllers
     {
         private readonly ICheckoutService _checkoutService;
         private readonly IHubContext<NotificationHub> _hubContext;
-
         public CheckoutController(ICheckoutService checkoutService, IHubContext<NotificationHub> hubContext)
         {
             _checkoutService = checkoutService;
@@ -28,18 +27,14 @@ namespace QLNH_Backend.Controllers
             {
                 return BadRequest(new { success = false, message = "Dữ liệu gửi lên không hợp lệ." });
             }
-
             try
             {
                 var result = await _checkoutService.ProcessCheckoutAsync(request);
-                
                 if (result.Success)
                 {
-                    // Truyền thêm MaBan để các client/bồi bàn cập nhật sơ đồ bàn ngay lập tức
                     await _hubContext.Clients.All.SendAsync("ThanhToanThanhCong", request.MaBan);
                     return Ok(result);
                 }
-                
                 return BadRequest(result);
             }
             catch (Exception ex)
@@ -56,7 +51,6 @@ namespace QLNH_Backend.Controllers
                 var cashier = await _checkoutService.GetCashierByIdAsync(id);
                 if (cashier == null) 
                     return NotFound(new { message = "Không tìm thấy thu ngân" });
-        
                 return Ok(cashier);
             }
             catch (Exception ex)

@@ -11,26 +11,21 @@ namespace QLNH_Backend.BLL
     public class CheckoutService : ICheckoutService
     {
         private readonly AppDbContext _context;
-
         public CheckoutService(AppDbContext context)
         {
             _context = context;
         }
-
         public async Task<CheckoutResponseDTO> ProcessCheckoutAsync(CheckoutRequestDTO request)
         {
             using var transaction = await _context.Database.BeginTransactionAsync();
             try
             {
                 var table = await _context.BanAns.FindAsync(request.MaBan);
-
-                // 1. Lọc các phiếu gọi của bàn chưa được gán hóa đơn (MaHoaDon == null)
                 var phieuGois = await _context.PhieuGois
                     .Include(p => p.ChiTietPhieuGois)
                     .ThenInclude(c => c.MaMonNavigation)
                     .Where(p => p.MaBan == request.MaBan && p.MaHoaDon == null && p.TrangThai != "Đã thanh toán")
                     .ToListAsync();
-
                 if (!phieuGois.Any())
                 {
                     return new CheckoutResponseDTO 
@@ -39,31 +34,24 @@ namespace QLNH_Backend.BLL
                         Message = "Bàn không có phiếu gọi nào cần thanh toán!" 
                     };
                 }
-
                 KhachHang khachHang = null;
                 if (!string.IsNullOrWhiteSpace(request.SoDienThoai))
                 {
                     khachHang = await _context.KhachHangs
                         .FirstOrDefaultAsync(k => k.SoDienThoai == request.SoDienThoai.Trim());
                 }
-
-                // 2. Tính tiền
                 decimal tamTinh = 0;
                 foreach (var p in phieuGois)
                 {
                     tamTinh += p.ChiTietPhieuGois.Sum(c => c.SoLuong * (c.MaMonNavigation?.GiaTien ?? 0));
                 }
-
-                decimal vat = tamTinh * 0.10m;        // 10% VAT
+                decimal vat = tamTinh * 0.10m;       
                 decimal giamGia = 0m;
                 decimal tongThanhToan = tamTinh + vat - giamGia;
-
                 var now = DateTime.UtcNow;
-
-                // 3. Khởi tạo Hóa đơn
                 var hoaDon = new HoaDon
                 {
-                    MaNv = 1, // Thay bằng ID thu ngân thực tế nếu có truyền từ Token/Request
+                    MaNv = 1, 
                     MaKh = khachHang?.MaKh,
                     ThoiGianVao = phieuGois.Min(p => p.ThoiGianTao) ?? now,
                     ThoiGianRa = now,
@@ -73,8 +61,6 @@ namespace QLNH_Backend.BLL
                     TienKhachDua = tongThanhToan,
                     TienThua = 0m
                 };
-
-                // Nhóm chi tiết món từ các phiếu gọi vào hóa đơn
                 var groupedDetails = phieuGois
                     .SelectMany(p => p.ChiTietPhieuGois)
                     .GroupBy(ct => new { ct.MaMon, GiaTien = ct.MaMonNavigation?.GiaTien ?? 0 })
@@ -89,19 +75,13 @@ namespace QLNH_Backend.BLL
                 {
                     hoaDon.ChiTietHoaDons.Add(item);
                 }
-
                 _context.HoaDons.Add(hoaDon);
-                // Lưu trước để sinh khóa chính hoaDon.MaHoaDon
                 await _context.SaveChangesAsync();
-
-                // 4. Gán trực tiếp MaHoaDon và cập nhật trạng thái cho từng phiếu gọi
                 foreach (var p in phieuGois)
                 {
                     p.MaHoaDon = hoaDon.MaHoaDon;
                     p.TrangThai = "Đã thanh toán";
                 }
-
-                // 5. Lưu bảng trung gian HoaDonBan
                 var hoaDonBan = new HoaDonBan
                 {
                     MaHoaDon = hoaDon.MaHoaDon,
@@ -110,24 +90,18 @@ namespace QLNH_Backend.BLL
                     TrangThai = "Đã thanh toán"
                 };
                 _context.HoaDonBans.Add(hoaDonBan);
-
-                // 6. Tích điểm cho khách hàng
                 int diemCong = 0;
                 if (khachHang != null)
                 {
                     diemCong = (int)Math.Floor(tongThanhToan / 100000);
                     khachHang.DiemTichLuy += diemCong;
                 }
-
-                // 7. Chuyển trạng thái bàn về lại Trống
                 if (table != null)
                 {
                     table.TrangThai = "Trống";
                 }
-
                 await _context.SaveChangesAsync();
                 await transaction.CommitAsync();
-
                 return new CheckoutResponseDTO
                 {
                     Success = true,
@@ -147,7 +121,6 @@ namespace QLNH_Backend.BLL
                 };
             }
         }
-
         public async Task<object> GetCashierByIdAsync(int id)
         {
             var cashier = await _context.NhanViens
@@ -158,7 +131,6 @@ namespace QLNH_Backend.BLL
                     nv.VaiTro
                 })
                 .FirstOrDefaultAsync();
-
             return cashier;
         }
     }

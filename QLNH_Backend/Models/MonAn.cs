@@ -12,7 +12,6 @@ public class MonAn
     public decimal GiaTien { get; set; }
     public string? HinhAnh { get; set; }
     public bool DangKinhDoanh { get; set; }
-
     public virtual ICollection<ChiTietHoaDon> ChiTietHoaDons { get; set; } = new List<ChiTietHoaDon>();
     public virtual ICollection<ChiTietPhieuGoi> ChiTietPhieuGois { get; set; } = new List<ChiTietPhieuGoi>();
     public virtual NhomMon? MaNhomNavigation { get; set; }

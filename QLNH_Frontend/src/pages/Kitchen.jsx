@@ -12,23 +12,18 @@ const Kitchen = () => {
     const [cookingOrders, setCookingOrders] = useState([]);
     const [kitchenStaff, setKitchenStaff] = useState([]); // State lưu nhân sự bếp
     const { kitchenRefreshTrigger } = useNotifications();
-    
     const loadData = async () => {
         try {
             const pending = await getPendingOrders();
             const cooking = await getCookingOrders();
-
             console.log("Dữ liệu chờ chế biến (pending):", pending);
             console.log("Dữ liệu đang chế biến (cooking):", cooking);
-            
-            // Gọi hàm lấy nhân sự (nếu api lỗi thì gán mảng rỗng để không bị crash)
             let staff = [];
             try {
                 staff = await getKitchenStaff();
             } catch (e) {
                 console.warn("Chưa có API nhân sự");
             }
-
             setPendingOrders(pending);
             setCookingOrders(cooking);
             setKitchenStaff(staff);
@@ -36,11 +31,9 @@ const Kitchen = () => {
             console.error("Lỗi khi tải dữ liệu bếp:", error);
         }
     };
-
     useEffect(() => {
         loadData();
     }, [kitchenRefreshTrigger]);
-
     const handleStartCooking = async (maPhieu, maMon) => {
         try {
             await updateOrderStatus(maPhieu, maMon, "DangCheBien");
@@ -49,7 +42,6 @@ const Kitchen = () => {
             console.error("Lỗi khi bắt đầu nấu:", error);
         }
     };
-
     const handleFinishCooking = async (maPhieu, maMon) => {
         try {
             await updateOrderStatus(maPhieu, maMon, "HoanThanh");
@@ -58,15 +50,12 @@ const Kitchen = () => {
             console.error("Lỗi khi hoàn thành món:", error);
         }
     };
-
     const handleReportMissingIngredient = (order) => {
         console.log('Báo thiếu nguyên liệu:', order.tenMon, order.maPhieu, order.maMon);
     };
-
     const handleReportOutOfStock = (order) => {
         console.log('Báo hết món:', order.tenMon, order.maPhieu, order.maMon);
     };
-
     const handleLogout = () => {
         localStorage.clear();
         navigate('/');
@@ -92,7 +81,6 @@ const Kitchen = () => {
                     Đăng xuất
                 </div>
             </Navbar>
-
             <Container fluid className="flex-grow-1 overflow-hidden p-4">
                 <Row className="h-100 g-4">
                     <Col lg={3} md={4} className="h-100 overflow-auto hide-scrollbar pb-4">
@@ -144,7 +132,6 @@ const Kitchen = () => {
                                     </div>
                                 </div>
                             </Col>
-
                             <Col md={6} className="h-100 d-flex flex-column">
                                 <div className="kitchen-card-panel shadow-sm h-100 d-flex flex-column p-4 bg-white" style={{ borderRadius: '15px' }}>
                                     <h6 className="fw-bold text-dark mb-3">ĐANG CHẾ BIẾN ({cookingOrders.length})</h6>
@@ -160,10 +147,8 @@ const Kitchen = () => {
                                     </div>
                                 </div>
                             </Col>
-
                         </Row>
                     </Col>
-
                 </Row>
             </Container>
         </div>

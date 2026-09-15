@@ -5,7 +5,7 @@ export default function TableModal({ show, onHide, onSave, editingTable }) {
     const [form, setForm] = useState({ maBan: '', capacity: '', floor: '1', trangThai: 'Trống' });
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState('');
-
+    
     useEffect(() => {
         if (editingTable) {
             setForm({
@@ -30,7 +30,6 @@ export default function TableModal({ show, onHide, onSave, editingTable }) {
             setError('Vui lòng nhập mã bàn (Ví dụ: 101, 102...)');
             return;
         }
-
         setSaving(true);
         try {
             const payload = {
@@ -56,7 +55,6 @@ export default function TableModal({ show, onHide, onSave, editingTable }) {
             <Form onSubmit={handleSubmit}>
                 <Modal.Body className="p-4">
                     {error && <div className="alert alert-danger py-2">{error}</div>}
-
                     {!editingTable && (
                         <Form.Group className="mb-3">
                             <Form.Label className="fw-semibold">Mã bàn / Số bàn</Form.Label>
@@ -69,7 +67,6 @@ export default function TableModal({ show, onHide, onSave, editingTable }) {
                             />
                         </Form.Group>
                     )}
-
                     <Form.Group className="mb-3">
                         <Form.Label className="fw-semibold">Sức chứa (số lượng khách)</Form.Label>
                         <Form.Control
@@ -80,7 +77,6 @@ export default function TableModal({ show, onHide, onSave, editingTable }) {
                             required
                         />
                     </Form.Group>
-
                     <Form.Group className="mb-3">
                         <Form.Label className="fw-semibold">Khu vực / Tầng</Form.Label>
                         <Form.Select

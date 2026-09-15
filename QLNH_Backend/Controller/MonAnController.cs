@@ -10,12 +10,10 @@ namespace QLNH_Backend.Controller
     {
         private readonly IMonAnService _service;
         public MonAnController(IMonAnService service) => _service = service;
-
-        // Dành cho trang Quản lý: Lấy tất cả món (bao gồm cả món ngừng kinh doanh và tạm hết)
+        
         [HttpGet]
         public async Task<IActionResult> GetAll() => Ok(await _service.GetAllAsync());
-
-        // Dành cho Menu khách / Phục vụ: Chỉ lấy những món đang kinh doanh (DangKinhDoanh == true)
+        
         [HttpGet("menu-khach")]
         public async Task<IActionResult> GetMenuKhach() => Ok(await _service.GetMenuChoKhachAsync());
 
@@ -42,7 +40,6 @@ namespace QLNH_Backend.Controller
             }
         }
 
-        // Bật / Tắt trạng thái tạm hết trên RAM
         [HttpPatch("{id}/tam-het")]
         public IActionResult ToggleTamHet(int id)
         {

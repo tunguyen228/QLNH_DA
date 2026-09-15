@@ -30,12 +30,10 @@ namespace QLNH_Backend.Controller
                         TenNhom = n.TenNhom
                     })
                     .ToListAsync();
-
                 if (categories == null || categories.Count == 0)
                 {
                     return NotFound("Không tìm thấy nhóm món nào.");
                 }
-
                 return Ok(categories);
             }
             catch (System.Exception ex)

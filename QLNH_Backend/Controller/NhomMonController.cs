@@ -11,7 +11,6 @@ using Microsoft.AspNetCore.SignalR;
 using QLNH_Backend.Hubs;
 using Microsoft.AspNetCore.Mvc;
 
-
 namespace QLNH_Backend.Controller
 {
     [ApiController]
@@ -39,7 +38,6 @@ namespace QLNH_Backend.Controller
         {
             var nhom = await _context.NhomMons.FindAsync(id);
             if (nhom == null) return NotFound();
-            // kiểm tra còn món ăn thuộc nhóm này không trước khi xóa
             var conMon = await _context.MonAns.AnyAsync(m => m.MaNhom == id);
             if (conMon) return BadRequest(new { message = "Nhóm còn món ăn, không thể xóa" });
             _context.NhomMons.Remove(nhom);

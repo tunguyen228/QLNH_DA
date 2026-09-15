@@ -10,7 +10,6 @@ public class ChiTietPhieuGoi
     public int SoLuong { get; set; }
     public string? GhiChu { get; set; }
     public string? TrangThai { get; set; }
-
     public virtual MonAn? MaMonNavigation { get; set; }
     public virtual PhieuGoi? MaPhieuNavigation { get; set; }
 }

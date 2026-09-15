@@ -9,7 +9,6 @@ public class ChiTietPhieuNhap
     public int MaNguyenLieu { get; set; } 
     public decimal DonGia { get; set; }
     public int SoLuongNhap { get; set; } 
-    
     public virtual PhieuNhap? MaPhieuNhapNavigation { get; set; }
     public virtual NguyenLieu? MaNguyenLieuNavigation { get; set; }
 }

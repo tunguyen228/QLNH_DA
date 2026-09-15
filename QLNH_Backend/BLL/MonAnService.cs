@@ -13,10 +13,7 @@ namespace QLNH_Backend.BLL
     {
         private readonly IMonAnRepository _repo;
         public MonAnService(IMonAnRepository repo) => _repo = repo;
-
-        // Lưu danh sách MaMon đang tạm hết trên RAM
         public static readonly HashSet<int> DanhSachTamHet = new HashSet<int>();
-
         private static MonAnDTO ToDTO(MonAn m) => new MonAnDTO
         {
             MaMon = m.MaMon,
@@ -28,15 +25,11 @@ namespace QLNH_Backend.BLL
             DangKinhDoanh = m.DangKinhDoanh,
             TamHet = DanhSachTamHet.Contains(m.MaMon)
         };
-
-        // Quản lý: Lấy tất cả món (cả đang bán và ngừng kinh doanh)
         public async Task<List<MonAnDTO>> GetAllAsync()
         {
             var list = await _repo.GetAllAsync();
             return list.Select(ToDTO).ToList();
         }
-
-        // Khách / Phục vụ: Chỉ lấy món đang kinh doanh
         public async Task<List<MonAnDTO>> GetMenuChoKhachAsync()
         {
             var list = await _repo.GetAllAsync();
@@ -44,19 +37,14 @@ namespace QLNH_Backend.BLL
                        .Select(ToDTO)
                        .ToList();
         }
-
-        // Bật / tắt Tạm hết trên RAM
         public bool ToggleTamHet(int id)
         {
             if (DanhSachTamHet.Contains(id))
                 DanhSachTamHet.Remove(id);
             else
                 DanhSachTamHet.Add(id);
-
             return DanhSachTamHet.Contains(id);
         }
-
-        // Triển khai CreateAsync
         public async Task<MonAnDTO> CreateAsync(MonAnDTO dto)
         {
             var m = new MonAn
@@ -71,8 +59,6 @@ namespace QLNH_Backend.BLL
             var created = await _repo.GetByIdAsync(m.MaMon);
             return ToDTO(created ?? m);
         }
-
-        // Triển khai UpdateAsync
         public async Task<bool> UpdateAsync(int id, MonAnDTO dto)
         {
             var m = await _repo.GetByIdAsync(id);
@@ -83,14 +69,10 @@ namespace QLNH_Backend.BLL
             m.GiaTien = dto.GiaTien;
             m.HinhAnh = dto.HinhAnh;
             m.DangKinhDoanh = dto.DangKinhDoanh;
-
             return await _repo.UpdateAsync(m);
         }
-
-        // Triển khai DeleteAsync
         public async Task<bool> DeleteAsync(int id)
         {
-            // Xóa khỏi danh sách tạm hết nếu đang lưu trong RAM
             DanhSachTamHet.Remove(id);
             return await _repo.DeleteAsync(id);
         }

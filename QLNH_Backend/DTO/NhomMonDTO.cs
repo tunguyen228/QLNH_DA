@@ -8,7 +8,6 @@ namespace QLNH_Backend.DTO
         public int MaNhom { get; set; } 
         public string TenNhom { get; set; } = string.Empty;
     }
-
     public class NhomMonRequestDTO
     {
         [Required] public string TenNhom { get; set; }

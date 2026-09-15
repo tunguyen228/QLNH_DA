@@ -2,18 +2,15 @@ import axios from 'axios';
 
 const host = window.location.hostname;
 const API_BASE_URL = `http://${host}:5000/api/kitchen`;
-
 export const getKitchenStaff = async () => {
     try {
-        // API_BASE_URL đã là /api/kitchen, nên chỉ cần nối thêm /staff
         const response = await axios.get(`${API_BASE_URL}/staff`);
         return response.data;
     } catch (error) {
         console.error("Lỗi khi lấy danh sách nhân viên bếp:", error);
-        return []; // Trả về mảng rỗng nếu lỗi để giao diện không bị crash
+        return []; 
     }
 };
-
 export const getPendingOrders = async () => {
     try {
         const response = await axios.get(`${API_BASE_URL}/orders?status=pending`);
@@ -23,7 +20,6 @@ export const getPendingOrders = async () => {
         return [];
     }
 };
-
 export const getCookingOrders = async () => {
     try {
         const response = await axios.get(`${API_BASE_URL}/orders?status=cooking`);
@@ -33,7 +29,6 @@ export const getCookingOrders = async () => {
         return [];
     }
 };
-
 export const updateOrderStatus = async (maPhieu, maMon, TrangThai) => {
     try {
         const response = await axios.put(`${API_BASE_URL}/CapNhatTrangThai`, {

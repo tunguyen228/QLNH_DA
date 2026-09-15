@@ -13,7 +13,6 @@ namespace QLNH_Backend.Controller
     {
         private readonly IBepService _bepService;
         private readonly IHubContext<NotificationHub> _hubContext;
-
         public KitchenController(IBepService bepService, IHubContext<NotificationHub> hubContext)
         {
             _bepService = bepService;
@@ -32,11 +31,9 @@ namespace QLNH_Backend.Controller
                 }
                 else if (status == "cooking") 
                 {
-                    // LƯU Ý: Đảm bảo bạn đã viết hàm này trong BepService
                     var cookingOrders = await _bepService.GetDanhSachMonDangCheBienAsync();
                     return Ok(cookingOrders);
                 }
-
                 return BadRequest(new { message = "Trạng thái không hợp lệ." });
             }
             catch (System.Exception ex)
@@ -58,7 +55,6 @@ namespace QLNH_Backend.Controller
             var result = await _bepService.CapNhatTrangThaiMonAsync(request.PhieuGoiId, request.MonAnId, request.TrangThai);
             if (result)
             {
-                // ĐÃ XÓA SIGNALR Ở ĐÂY VÌ BEPSERVICE ĐÃ XỬ LÝ (BAO GỒM CẢ TENMON, MABAN)
                 return Ok(new { message = "Cập nhật thành công!" });
             }
             return BadRequest("Không tìm thấy món ăn trong phiếu này.");
@@ -76,7 +72,6 @@ namespace QLNH_Backend.Controller
         {
             try
             {
-                // LƯU Ý: Đảm bảo bạn đã viết hàm này trong BepService
                 var staffList = await _bepService.GetKitchenStaffAsync();
                 return Ok(staffList);
             }

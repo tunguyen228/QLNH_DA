@@ -13,7 +13,6 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace QLNH_Backend.Controller;
 
-// File: Controllers/NhanVienController.cs
 [ApiController]
 [Route("api/[controller]")]
 public class NhanVienController : ControllerBase

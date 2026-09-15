@@ -11,9 +11,7 @@ namespace QLNH_Backend.BLL
     public class TableService : ITableService
     {
         private readonly ITableRepository _repo;
-
         public TableService(ITableRepository repo) => _repo = repo;
-
         private static TableDTO ToDTO(BanAn b)
         {
             TableStatus mappedStatus = TableStatus.Empty;
@@ -21,7 +19,6 @@ namespace QLNH_Backend.BLL
             {
                 mappedStatus = TableStatus.InUse;
             }
-
             return new TableDTO
             {
                 Id = b.MaBan,
@@ -30,10 +27,8 @@ namespace QLNH_Backend.BLL
                 Status = mappedStatus
             };
         }
-
         public async Task<List<TableDTO>> GetAllAsync() =>
             (await _repo.GetAllAsync()).Select(ToDTO).ToList();
-
         public async Task<TableDTO> CreateAsync(TableRequestDTO dto)
         {
             var b = new BanAn
@@ -42,23 +37,18 @@ namespace QLNH_Backend.BLL
                 Tang = dto.Floor,
                 TrangThai = dto.TrangThai
             };
-
             await _repo.AddAsync(b);
             return ToDTO(b);
         }
-
         public async Task<bool> UpdateAsync(int id, TableRequestDTO dto)
         {
             var b = await _repo.GetByIdAsync(id);
             if (b == null) return false;
-
             b.SoGhe = dto.Capacity;
             b.Tang = dto.Floor;
             b.TrangThai = dto.TrangThai;
-
             return await _repo.UpdateAsync(b);
         }
-
         public Task<bool> DeleteAsync(int id) => _repo.DeleteAsync(id);
     }
 }

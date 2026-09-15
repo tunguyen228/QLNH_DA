@@ -28,11 +28,9 @@ public class AppDbContext : DbContext
     public virtual DbSet<PhieuNhap>  PhieuNhaps { get; set; }
     public virtual DbSet<PhieuXuat> PhieuXuats { get; set; }
     public virtual DbSet<ThongBao> ThongBaos { get; set; }
-    
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
-        
         modelBuilder.Entity<BanAn>(entity =>
         {
             entity.HasKey(e => e.MaBan);

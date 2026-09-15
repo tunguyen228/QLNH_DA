@@ -2,19 +2,16 @@ import React, { createContext, useContext, useEffect, useState, useCallback } fr
 import * as signalR from "@microsoft/signalr";
 
 const NotificationContext = createContext(null);
-
 export const useNotifications = () => useContext(NotificationContext);
-
 export const NotificationProvider = ({ children }) => {
     const [notifications, setNotifications] = useState([]);
     const [kitchenRefreshTrigger, setKitchenRefreshTrigger] = useState(0);
     const [checkoutRefreshTrigger, setCheckoutRefreshTrigger] = useState(0);
-    const [tableRefreshTrigger, setTableRefreshTrigger] = useState(0); // Trigger cho Sơ đồ bàn
+    const [tableRefreshTrigger, setTableRefreshTrigger] = useState(0); 
 
     useEffect(() => {
         let isMounted = true;
         const host = window.location.hostname;
-
         const connection = new signalR.HubConnectionBuilder()
             .withUrl(`http://${host}:5000/notificationHub`, {
                 skipNegotiation: true,
@@ -22,13 +19,10 @@ export const NotificationProvider = ({ children }) => {
             })
             .withAutomaticReconnect()
             .build();
-
-        // 1. Dành cho Phục vụ: Bếp nấu xong
         connection.on("DishStatusUpdated", (data) => {
             const trangThai = data.trangThai ?? data.TrangThai;
             const isDone = trangThai === "DaXong" || trangThai === "HoanThanh";
             if (!isDone) return;
-
             const newItem = {
                 id: `${data.maPhieu ?? data.MaPhieu}-${data.maMon ?? data.MaMon}-${Date.now()}`,
                 maPhieu: data.maPhieu ?? data.MaPhieu,
@@ -39,23 +33,17 @@ export const NotificationProvider = ({ children }) => {
                 thoiGian: new Date(),
                 type: 'success'
             };
-
             setNotifications(prev => [newItem, ...prev].slice(0, 30));
         });
-
-        // 2. Dành cho Bếp: Phục vụ gọi món mới
         connection.on("NewOrderToKitchen", () => {
-            setKitchenRefreshTrigger(prev => prev + 1); // Trigger màn hình Bếp reload
-            setTableRefreshTrigger(prev => prev + 1);   // Trigger Sơ đồ bàn chuyển màu đỏ
+            setKitchenRefreshTrigger(prev => prev + 1); 
+            setTableRefreshTrigger(prev => prev + 1);  
             setCheckoutRefreshTrigger(prev => prev + 1);
         });
-
-        // 3. Khi thanh toán thành công hoặc có phiếu gọi mới
         connection.on("ThanhToanThanhCong", () => {
             setCheckoutRefreshTrigger(prev => prev + 1);
-            setTableRefreshTrigger(prev => prev + 1); // Bàn chuyển về "Trống"
+            setTableRefreshTrigger(prev => prev + 1); 
         });
-        
         const startConnection = async () => {
             try {
                 await connection.start();
@@ -66,9 +54,7 @@ export const NotificationProvider = ({ children }) => {
                 console.error("SignalR (Notification) Error: ", err);
             }
         };
-
         startConnection();
-
         return () => {
             isMounted = false;
             if (connection.state === signalR.HubConnectionState.Connected) {
@@ -76,7 +62,6 @@ export const NotificationProvider = ({ children }) => {
             }
         };
     }, []);
-
     const markAllAsRead = useCallback(() => {
         setNotifications(prev => {
             const hasUnread = prev.some(n => !n.read);
@@ -84,13 +69,10 @@ export const NotificationProvider = ({ children }) => {
             return prev.map(n => ({ ...n, read: true }));
         });
     }, []);
-
     const clearAll = useCallback(() => {
         setNotifications([]);
     }, []);
-
     const unreadCount = notifications.filter(n => !n.read).length;
-
     return (
         <NotificationContext.Provider value={{
             notifications,
@@ -99,7 +81,7 @@ export const NotificationProvider = ({ children }) => {
             clearAll,
             kitchenRefreshTrigger,
             checkoutRefreshTrigger,
-            tableRefreshTrigger // Cung cấp biến này ra toàn bộ App
+            tableRefreshTrigger 
         }}>
             {children}
         </NotificationContext.Provider>

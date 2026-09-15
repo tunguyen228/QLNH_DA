@@ -8,12 +8,10 @@ const GiaoDienPhucVuContent = () => {
     const navigate = useNavigate();
     const hoTen = localStorage.getItem('hoTen');
     const { tableRefreshTrigger } = useNotifications();
-
     const handleLogout = () => {
         localStorage.clear();
         navigate('/');
     };
-
     return (
         <Container fluid className="p-0" style={{ height: '100vh', display: 'flex' }}>
             <div style={{ flexShrink: 0 }}>
@@ -26,7 +24,6 @@ const GiaoDienPhucVuContent = () => {
         </Container>
     );
 };
-
 const GiaoDienPhucVu = () => {
     return (
         <NotificationProvider>

@@ -2,7 +2,6 @@ import React, { createContext, useContext, useState } from 'react';
 import { Toast, ToastContainer } from 'react-bootstrap';
 
 const ToastContext = createContext();
-
 export const useToast = () => {
     const context = useContext(ToastContext);
     if (context === undefined) {
@@ -10,15 +9,12 @@ export const useToast = () => {
     }
     return context;
 };
-
 export const ToastProvider = ({ children }) => {
     const [toasts, setToasts] = useState([]);
-    
     const addToast = (message, variant = 'success') => {
         const id = new Date().getTime();
         setToasts((prevToasts) => [...prevToasts, { id, message, variant }]);
     };
-
     const removeToast = (id) => {
         setToasts((prevToasts) => prevToasts.filter((toast) => toast.id !== id));
     };

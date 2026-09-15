@@ -10,7 +10,6 @@ public class ChiTietHoaDon
     public int SoLuong { get; set; }
     public decimal DonGia { get; set; }
     public DateTime? ThoiGianGoi { get; set; }
-    
     public virtual HoaDon? MaHoaDonNavigation { get; set; }
     public virtual MonAn? MaMonNavigation { get; set; }
 }

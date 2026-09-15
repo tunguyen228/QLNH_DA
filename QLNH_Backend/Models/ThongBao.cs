@@ -10,6 +10,5 @@ public class ThongBao
     public string NoiDung { get; set; } = null!;
     public bool? DaXem { get; set; }
     public DateTime? ThoiGian { get; set; }
-    
     public virtual BanAn? MaBanNavigation { get; set; }
 }

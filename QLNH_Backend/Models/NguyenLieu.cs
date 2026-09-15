@@ -10,7 +10,6 @@ public class NguyenLieu
     public string? DonViTinh { get; set; } 
     public decimal DonGia { get; set; } 
     public double SoLuongTon { get; set; } 
-    
     public virtual ICollection<ChiTietPhieuNhap> ChiTietPhieuNhaps { get; set; } = new List<ChiTietPhieuNhap>();
     public virtual ICollection<ChiTietPhieuXuat> ChiTietPhieuXuats { get; set; } = new List<ChiTietPhieuXuat>();
     public virtual ICollection<DinhLuong> DinhLuongs { get; set; } = new List<DinhLuong>();

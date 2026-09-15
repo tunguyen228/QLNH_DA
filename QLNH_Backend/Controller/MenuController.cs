@@ -40,7 +40,6 @@ namespace QLNH_Backend.Controllers
                     TenNhom = m.MaNhomNavigation != null ? m.MaNhomNavigation.TenNhom : "Chưa phân loại"
                 })
                 .ToListAsync();
-
             return Ok(monAns);
         }
 
@@ -51,20 +50,16 @@ namespace QLNH_Backend.Controllers
             {
                 if (request == null || request.Items == null || request.Items.Count == 0)
                     return BadRequest("Dữ liệu order không hợp lệ.");
-
                 var result = await _bepService.GuiOrderXuongBep(request);
-
                 if (result)
                 {
                     await _hubContext.Clients.All.SendAsync("CoDonOrderMoi");
                     return Ok(new { message = "Đã gửi order xuống bếp thành công" });
                 }
-                
                 return StatusCode(500, "Lỗi hệ thống khi gửi order.");
             }
             catch (System.Exception ex)
             {
-                // TODO: Log lỗi thực tế
                 return StatusCode(500, ex.Message);
             }
         }

@@ -10,16 +10,11 @@ const TableMap = () => {
     const [currentFloor, setCurrentFloor] = useState(1);
     const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
-
-    // Nhận trigger SignalR từ NotificationProvider
     const { tableRefreshTrigger } = useNotifications() || {};
-
     const fetchTableData = async () => {
         try {
             const dbData = await getTableMap();
-
             const allTablesRaw = dbData.areas.flatMap(area => area.tables);
-
             const formattedTables = allTablesRaw.map(table => {
                 const statusText = table.status === 1 ? 'ĐANG PHỤC VỤ' : 'TRỐNG';
 
@@ -33,7 +28,6 @@ const TableMap = () => {
                     colSpan: table.capacity >= 8 ? 6 : 3
                 };
             });
-
             setAllTables(formattedTables);
         } catch (error) {
             console.error("Lỗi khi tải sơ đồ bàn:", error);
@@ -41,33 +35,25 @@ const TableMap = () => {
             setLoading(false);
         }
     };
-
-    // Tải dữ liệu lần đầu khi vào trang
     useEffect(() => {
         fetchTableData();
     }, []);
-
-    // Tự động load lại sơ đồ bàn khi SignalR nhận sự kiện thanh toán hoặc order
     useEffect(() => {
         if (tableRefreshTrigger > 0) {
             fetchTableData();
         }
     }, [tableRefreshTrigger]);
-
     const getStatusClass = (status) => {
         switch (status) {
             case 1: return 'status-in-use';
             default: return 'status-empty';
         }
     };
-
     const handleTableClick = (tableId) => {
         console.log("Điều hướng tới menu của bàn:", tableId);
         navigate(`/phuc-vu/menu/${tableId}`);
     };
-
     if (loading) return <div className="text-center mt-5"><Spinner animation="border" /></div>;
-
     const displayedTables = allTables.filter(table => table.tang === currentFloor);
 
     return (
@@ -93,7 +79,6 @@ const TableMap = () => {
                     </Button>
                 </div>
             </div>
-
             <Row className="g-4">
                 {displayedTables.length > 0 ? (
                     displayedTables.map(table => (

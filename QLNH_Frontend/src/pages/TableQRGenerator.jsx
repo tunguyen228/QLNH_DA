@@ -5,7 +5,6 @@ export default function TableQRGenerator() {
     const danhSachBan = [101, 102, 103, 104, 204, 205, 206, 207];
     const hostIP = "192.168.1.126:5173";
     const canvasRefs = useRef({});
-
     const handleDownload = (maBan) => {
         const canvas = canvasRefs.current[maBan];
         if (!canvas) return;
@@ -25,7 +24,6 @@ export default function TableQRGenerator() {
                     In tất cả mã QR
                 </button>
             </div>
-
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '20px', maxWidth: '1000px', margin: '0 auto' }}>
                 {danhSachBan.map((maBan) => {
                     const qrUrl = `http://${hostIP}/menu/${maBan}`;
@@ -49,7 +47,6 @@ export default function TableQRGenerator() {
                     );
                 })}
             </div>
-
             <style>{`
                 @media print {
                     .no-print { display: none !important; }

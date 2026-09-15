@@ -22,7 +22,7 @@ const NotificationBell = () => {
         const next = !isOpen;
         setIsOpen(next);
         if (next) {
-            markAllAsRead(); // Mở chuông ra là hết đỏ, đúng ý "giữ đến khi xem"
+            markAllAsRead();
         }
     };
 
@@ -34,7 +34,6 @@ const NotificationBell = () => {
                     <span className="notification-badge">{unreadCount > 9 ? '9+' : unreadCount}</span>
                 )}
             </button>
-
             {isOpen && (
                 <div className="notification-dropdown">
                     <div className="notification-dropdown-header">

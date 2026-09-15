@@ -17,7 +17,6 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
 export default function QuanLy() {
     const navigate = useNavigate();
     const hoTen = localStorage.getItem('hoTen') || 'Quản lý';
-
     const handleLogout = () => {
         localStorage.clear();
         navigate('/');
@@ -39,7 +38,6 @@ export default function QuanLy() {
         </div>
     );
 }
-
 const formatDate = (date) => {
     const d = new Date(date);
     const year = d.getFullYear();
@@ -47,8 +45,6 @@ const formatDate = (date) => {
     const day = String(d.getDate()).padStart(2, '0');
     return `${year}-${month}-${day}`;
 };
-
-// TAB 1: BÁO CÁO THỐNG KÊ
 function DashboardTab() {
     const [revDate, setRevDate] = useState({
         from: formatDate(new Date(Date.now() - 6 * 24 * 60 * 60 * 1000)),
@@ -60,14 +56,12 @@ function DashboardTab() {
         doanhThuTuan: []
     });
     const [loadingRev, setLoadingRev] = useState(true);
-
     const [topDate, setTopDate] = useState({
         from: formatDate(new Date(Date.now() - 6 * 24 * 60 * 60 * 1000)),
         to: formatDate(new Date())
     });
     const [topMonAn, setTopMonAn] = useState([]);
     const [loadingTop, setLoadingTop] = useState(true);
-
     const fetchRevenue = async (fromVal = revDate.from, toVal = revDate.to) => {
         setLoadingRev(true);
         try {
@@ -85,7 +79,6 @@ function DashboardTab() {
             setLoadingRev(false);
         }
     };
-
     const fetchTopDishes = async (fromVal = topDate.from, toVal = topDate.to) => {
         setLoadingTop(true);
         try {
@@ -99,12 +92,10 @@ function DashboardTab() {
             setLoadingTop(false);
         }
     };
-
     useEffect(() => {
         fetchRevenue();
         fetchTopDishes();
     }, []);
-
     const handleQuickRevFilter = (type) => {
         const now = new Date();
         let from = new Date();
@@ -120,7 +111,6 @@ function DashboardTab() {
         setRevDate({ from: newFrom, to: newTo });
         fetchRevenue(newFrom, newTo);
     };
-
     const handleQuickTopFilter = (type) => {
         const now = new Date();
         let from = new Date();
@@ -136,7 +126,6 @@ function DashboardTab() {
         setTopDate({ from: newFrom, to: newTo });
         fetchTopDishes(newFrom, newTo);
     };
-
     return (
         <div style={{ color: '#2c3e50' }}>
             <Card className="shadow-sm border-0 p-4 mb-4 bg-white rounded-4">
@@ -149,7 +138,6 @@ function DashboardTab() {
                         <Button variant="outline-secondary" size="sm" onClick={() => handleQuickRevFilter('today')}>Hôm nay</Button>
                         <Button variant="outline-secondary" size="sm" onClick={() => handleQuickRevFilter('week')}>Tuần này</Button>
                         <Button variant="outline-secondary" size="sm" onClick={() => handleQuickRevFilter('month')}>Tháng này</Button>
-
                         <div className="d-flex align-items-center gap-1 ms-lg-2">
                             <Form.Control
                                 type="date"
@@ -176,7 +164,6 @@ function DashboardTab() {
                     </div>
                 </div>
             </Card>
-
             {loadingRev ? (
                 <div className="text-center py-4 mb-4"><Spinner animation="border" variant="success" /></div>
             ) : (
@@ -209,7 +196,6 @@ function DashboardTab() {
                             </Card>
                         </Col>
                     </Row>
-
                     <Row className="mb-4">
                         <Col xs={12}>
                             <Card className="shadow-sm border-0 p-4 bg-white rounded-4">
@@ -244,7 +230,6 @@ function DashboardTab() {
                     </Row>
                 </>
             )}
-
             <Card className="shadow-sm border-0 p-4 bg-white rounded-4">
                 <div className="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
                     <div>
@@ -255,7 +240,6 @@ function DashboardTab() {
                         <Button variant="outline-secondary" size="sm" onClick={() => handleQuickTopFilter('today')}>Hôm nay</Button>
                         <Button variant="outline-secondary" size="sm" onClick={() => handleQuickTopFilter('week')}>Tuần này</Button>
                         <Button variant="outline-secondary" size="sm" onClick={() => handleQuickTopFilter('month')}>Tháng này</Button>
-
                         <div className="d-flex align-items-center gap-1 ms-lg-2">
                             <Form.Control
                                 type="date"
@@ -281,7 +265,6 @@ function DashboardTab() {
                         </div>
                     </div>
                 </div>
-
                 {loadingTop ? (
                     <div className="text-center py-4"><Spinner animation="border" variant="success" /></div>
                 ) : (
@@ -324,16 +307,11 @@ function DashboardTab() {
         </div>
     );
 }
-
-// TAB 2: QUẢN LÝ NHÂN VIÊN
 function StaffTab() {
     const [nhanVienList, setNhanVienList] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showModal, setShowModal] = useState(false);
     const [editingStaff, setEditingStaff] = useState(null);
-
-    useEffect(() => { loadStaff(); }, []);
-
     const loadStaff = async () => {
         setLoading(true);
         try {
@@ -345,13 +323,11 @@ function StaffTab() {
             setLoading(false);
         }
     };
-
     const handleSave = async (formData, id) => {
         if (id) await updateStaff(id, formData);
         else await createStaff(formData);
         await loadStaff();
     };
-
     const handleDelete = async (id) => {
         if (!window.confirm('Xác nhận xóa nhân viên này?')) return;
         try {
@@ -361,6 +337,7 @@ function StaffTab() {
             alert('Không thể xóa nhân viên này');
         }
     };
+    useEffect(() => { loadStaff(); }, []);
 
     return (
         <div>
@@ -375,7 +352,6 @@ function StaffTab() {
                     <FaPlus /> Thêm nhân viên
                 </Button>
             </div>
-
             <Card className="shadow-sm border-0 p-4 bg-white rounded-4">
                 {loading ? <div className="text-center py-4"><Spinner animation="border" variant="success" /></div> : (
                     <div className="table-responsive">
@@ -410,22 +386,16 @@ function StaffTab() {
                     </div>
                 )}
             </Card>
-
             <StaffModal show={showModal} onHide={() => setShowModal(false)} onSave={handleSave} editingStaff={editingStaff} />
         </div>
     );
 }
-
-// TAB 3: QUẢN LÝ MÓN ĂN
 function MenuTab() {
     const [monAnList, setMonAnList] = useState([]);
     const [nhomList, setNhomList] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showModal, setShowModal] = useState(false);
     const [editingItem, setEditingItem] = useState(null);
-
-    useEffect(() => { loadAll(); }, []);
-
     const loadAll = async () => {
         setLoading(true);
         try {
@@ -438,19 +408,16 @@ function MenuTab() {
             setLoading(false);
         }
     };
-
     const handleSave = async (formData, id) => {
         if (id) await updateMenuItem(id, formData);
         else await createMenuItem(formData);
         await loadAll();
     };
-
     const handleDelete = async (id) => {
         if (!window.confirm('Xác nhận xóa món ăn này?')) return;
         try { await deleteMenuItem(id); await loadAll(); }
         catch { alert('Không thể xóa món ăn này'); }
     };
-
     const handleToggleDangKinhDoanh = async (mon) => {
         const id = mon.maMon ?? mon.MaMon;
         const currentStatus = mon.dangKinhDoanh ?? mon.DangKinhDoanh ?? false;
@@ -459,9 +426,7 @@ function MenuTab() {
             dangKinhDoanh: !currentStatus,
             DangKinhDoanh: !currentStatus
         };
-
         setMonAnList(prev => prev.map(item => (item.maMon ?? item.MaMon) === id ? updatedMon : item));
-
         try {
             await updateMenuItem(id, updatedMon);
         } catch (error) {
@@ -470,15 +435,12 @@ function MenuTab() {
             await loadAll();
         }
     };
-
     const handleToggleTamHet = async (mon) => {
         const id = mon.maMon ?? mon.MaMon;
         const currentTamHet = mon.tamHet ?? mon.TamHet ?? false;
-
         setMonAnList(prev => prev.map(item =>
             (item.maMon ?? item.MaMon) === id ? { ...item, tamHet: !currentTamHet, TamHet: !currentTamHet } : item
         ));
-
         try {
             await toggleTamHet(id);
         } catch (error) {
@@ -487,6 +449,7 @@ function MenuTab() {
             await loadAll();
         }
     };
+    useEffect(() => { loadAll(); }, []);
 
     return (
         <div>
@@ -501,7 +464,6 @@ function MenuTab() {
                     <FaPlus /> Thêm món mới
                 </Button>
             </div>
-
             <Card className="shadow-sm border-0 p-4 bg-white rounded-4">
                 {loading ? <div className="text-center py-4"><Spinner animation="border" variant="success" /></div> : (
                     <div className="table-responsive">
@@ -522,7 +484,6 @@ function MenuTab() {
                                 const isDangKinhDoanh = mon.dangKinhDoanh ?? mon.DangKinhDoanh ?? false;
                                 const isTamHet = mon.tamHet ?? mon.TamHet ?? false;
                                 const id = mon.maMon ?? mon.MaMon;
-
                                 return (
                                     <tr key={id} style={{ opacity: isDangKinhDoanh ? 1 : 0.65 }}>
                                         <td className="py-3 px-3 text-muted fw-bold">{id}</td>
@@ -565,21 +526,16 @@ function MenuTab() {
                     </div>
                 )}
             </Card>
-
             <MenuModal show={showModal} onHide={() => setShowModal(false)} onSave={handleSave} editingItem={editingItem} nhomList={nhomList} />
         </div>
     );
 }
 
-// TAB 4: QUẢN LÝ BÀN ĂN
 function TableTab() {
     const [tableList, setTableList] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showModal, setShowModal] = useState(false);
     const [editingTable, setEditingTable] = useState(null);
-
-    useEffect(() => { loadTables(); }, []);
-
     const loadTables = async () => {
         setLoading(true);
         try {
@@ -591,13 +547,11 @@ function TableTab() {
             setLoading(false);
         }
     };
-
     const handleSave = async (formData, id) => {
         if (id) await updateTable(id, formData);
         else await createTable(formData);
         await loadTables();
     };
-
     const handleDelete = async (id) => {
         if (!window.confirm(`Xác nhận xóa bàn số ${id}?`)) return;
         try {
@@ -607,6 +561,7 @@ function TableTab() {
             alert('Không thể xóa bàn này');
         }
     };
+    useEffect(() => { loadTables(); }, []);
 
     return (
         <div>
@@ -621,7 +576,6 @@ function TableTab() {
                     <FaPlus /> Thêm bàn mới
                 </Button>
             </div>
-
             <Card className="shadow-sm border-0 p-4 bg-white rounded-4">
                 {loading ? <div className="text-center py-4"><Spinner animation="border" variant="success" /></div> : (
                     <div className="table-responsive">

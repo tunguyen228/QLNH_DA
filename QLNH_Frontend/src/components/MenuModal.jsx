@@ -1,4 +1,3 @@
-// File: components/MenuModal.jsx
 import React, { useState, useEffect } from 'react';
 import { Modal, Form, Button, Row, Col } from 'react-bootstrap';
 

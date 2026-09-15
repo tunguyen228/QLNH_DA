@@ -15,7 +15,6 @@ namespace QLNH_Backend.Controllers
     {
         private readonly ITableService _service;
         private readonly AppDbContext _context;
-
         public TableController(ITableService service, AppDbContext context)
         {
             _service = service;
@@ -28,19 +27,15 @@ namespace QLNH_Backend.Controllers
             var banAnsFromDb = await _context.BanAns
                 .OrderBy(b => b.MaBan)
                 .ToListAsync();
-
             var response = new TableMapResponse
             {
                 Areas = new List<AreaDTO>()
             };
-
             int total = 0, inUse = 0, available = 0;
-
             var tableDtos = banAnsFromDb.Select(b =>
             {
                 total++;
                 TableStatus mappedStatus = TableStatus.Empty;
-
                 if (b.TrangThai?.Trim() == "Đang phục vụ")
                 {
                     mappedStatus = TableStatus.InUse;
@@ -50,7 +45,6 @@ namespace QLNH_Backend.Controllers
                 {
                     available++;
                 }
-
                 return new TableDTO
                 {
                     Id = b.MaBan,
@@ -59,26 +53,21 @@ namespace QLNH_Backend.Controllers
                     Floor = b.Tang
                 };
             }).ToList();
-
             var defaultArea = new AreaDTO
             {
                 Id = 1,
                 Name = "Khu vực chung",
                 Tables = tableDtos
             };
-
             response.Areas.Add(defaultArea);
             response.TotalTables = total;
             response.InUseTables = inUse;
             response.AvailableTables = available;
-
             return Ok(response);
         }
-
         [HttpGet("active")]
         public async Task<IActionResult> GetActiveTables()
         {
-            // Lấy danh sách các bàn có phiếu gọi chưa xuất hóa đơn (MaHoaDon == null)
             var tables = await _context.BanAns
                 .Where(b => _context.PhieuGois.Any(p => p.MaBan == b.MaBan && p.MaHoaDon == null))
                 .OrderBy(b => b.MaBan)
@@ -88,7 +77,6 @@ namespace QLNH_Backend.Controllers
                     name = "Bàn " + b.MaBan
                 })
                 .ToListAsync();
-
             return Ok(tables);
         }
 

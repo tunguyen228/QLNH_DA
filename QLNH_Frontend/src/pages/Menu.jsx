@@ -10,7 +10,6 @@ const normalizeCategory = (raw) => ({
     id: raw.maNhom ?? raw.MaNhom ?? raw.id ?? raw.Id,
     name: raw.tenNhom ?? raw.TenNhom ?? raw.name ?? raw.Name ?? '',
 });
-
 const normalizeMenuItem = (raw) => ({
     id: raw.maMon ?? raw.MaMon ?? raw.id ?? raw.Id,
     name: raw.tenMon ?? raw.TenMon ?? raw.name ?? raw.Name ?? '',
@@ -21,7 +20,6 @@ const normalizeMenuItem = (raw) => ({
     isDangKinhDoanh: Boolean(raw.dangKinhDoanh ?? raw.DangKinhDoanh ?? true),
     isTamHet: Boolean(raw.tamHet ?? raw.TamHet ?? false)
 });
-
 const removeVietnameseTones = (str = '') => {
     return str
         .normalize('NFD')
@@ -31,7 +29,6 @@ const removeVietnameseTones = (str = '') => {
         .toLowerCase()
         .trim();
 };
-
 const Menu = () => {
     const navigate = useNavigate();
     const { tableId } = useParams();
@@ -45,16 +42,13 @@ const Menu = () => {
     const [tables, setTables] = useState([]);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [showCart, setShowCart] = useState(false);
-
     const isQRCodeMode = Boolean(tableId);
     const isStaff = !isQRCodeMode && !!localStorage.getItem('token');
-
     const [selectedTable, setSelectedTable] = useState(() => {
         if (tableId) return String(tableId);
         const savedQrTable = localStorage.getItem('current_qr_table');
         return savedQrTable ? savedQrTable : '';
     });
-
     useEffect(() => {
         if (tableId) {
             const tIdStr = String(tableId);
@@ -64,10 +58,8 @@ const Menu = () => {
             }
         }
     }, [tableId, isStaff]);
-
     const handleSendOrder = async () => {
         const currentTableToOrder = tableId || selectedTable || localStorage.getItem('current_qr_table');
-
         if (cart.length === 0) {
             addToast("Giỏ hàng đang trống!");
             return;
@@ -78,7 +70,6 @@ const Menu = () => {
         }
         if (isSubmitting) return;
         setIsSubmitting(true);
-
         try {
             if (isStaff) {
                 const storedMaNv = localStorage.getItem('maNv');
@@ -92,7 +83,6 @@ const Menu = () => {
             } else {
                 await sendQRClientOrder(currentTableToOrder, cart);
             }
-
             addToast('Đã gửi order cho bếp thành công!', 'success');
             setCart([]);
             setShowCart(false);
@@ -103,7 +93,6 @@ const Menu = () => {
             setIsSubmitting(false);
         }
     };
-
     useEffect(() => {
         const loadInitialData = async () => {
             const cats = await fetchCategories();
@@ -116,10 +105,8 @@ const Menu = () => {
         };
         loadInitialData();
     }, []);
-
     useEffect(() => {
         let filtered = allMenuItems;
-
         if (searchTerm.trim() !== '') {
             const keyword = removeVietnameseTones(searchTerm);
             filtered = filtered.filter(item =>
@@ -128,10 +115,8 @@ const Menu = () => {
         } else if (activeCategory !== 0) {
             filtered = filtered.filter(item => item.categoryId === activeCategory);
         }
-
         setMenuItems(filtered);
     }, [activeCategory, allMenuItems, searchTerm]);
-
     useEffect(() => {
         if (!isStaff) return;
         const loadTables = async () => {
@@ -140,25 +125,19 @@ const Menu = () => {
         };
         loadTables();
     }, [isStaff]);
-
     const handleTableChange = (e) => {
         const value = e.target.value;
         setSelectedTable(value);
         navigate(value ? `/phuc-vu/menu/${value}` : `/phuc-vu/menu`, { replace: true });
     };
-
     const handleSearchChange = (e) => {
         setSearchTerm(e.target.value);
     };
-
     const clearSearch = () => setSearchTerm('');
-
     const formatVND = (price) => {
         return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price || 0);
     };
-
     const getQtyInCart = (id) => cart.find(c => c.id === id)?.qty ?? 0;
-
     const addToCart = (item) => {
         if (item.isTamHet) {
             addToast("Món này hiện đang tạm hết!", "warning");
@@ -172,28 +151,22 @@ const Menu = () => {
             return [...prev, { ...item, qty: 1, note: '' }];
         });
     };
-
     const increaseQty = (item) => {
         if (item.isTamHet) return;
         setCart(prev => prev.map(c => c.id === item.id ? { ...c, qty: c.qty + 1 } : c));
     };
-
     const decreaseQty = (id) => {
         setCart(prev => prev
             .map(c => c.id === id ? { ...c, qty: c.qty - 1 } : c)
             .filter(c => c.qty > 0)
         );
     };
-
     const updateNote = (id, text) => {
         setCart(prev => prev.map(c => c.id === id ? { ...c, note: text } : c));
     };
-
     const subTotal = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
     const totalQty = cart.reduce((sum, item) => sum + item.qty, 0);
-
     const displayTableNumber = tableId || selectedTable || localStorage.getItem('current_qr_table') || '';
-
     const renderCartPanel = () => (
         <>
             {isStaff ? (
@@ -218,7 +191,6 @@ const Menu = () => {
                     </span>
                 </div>
             )}
-
             <ListGroup
                 variant="flush"
                 className="flex-grow-1 overflow-auto hide-scrollbar mb-3"
@@ -238,7 +210,6 @@ const Menu = () => {
                                 <div className="text-muted mb-2" style={{ fontSize: '0.75rem' }}>
                                     {formatVND(cartItem.price)} / phần
                                 </div>
-
                                 <div className="d-flex justify-content-between align-items-end mt-2">
                                     <div className="pe-2" style={{ flex: 1 }}>
                                         <Form.Control
@@ -250,7 +221,6 @@ const Menu = () => {
                                             style={{ fontSize: '0.75rem', padding: '0.35rem 0.5rem', borderRadius: '4px' }}
                                         />
                                     </div>
-
                                     <div className="qty-control d-flex align-items-center flex-shrink-0">
                                         <button
                                             type="button"
@@ -299,7 +269,6 @@ const Menu = () => {
                     </div>
                 )}
             </ListGroup>
-
             <div className="mt-auto pt-3 border-top">
                 <div className="d-flex justify-content-between mb-2 text-muted" style={{ fontSize: '0.9rem' }}>
                     <span>Tạm tính</span>
@@ -361,7 +330,6 @@ const Menu = () => {
                                 <i className="bi bi-question-circle-fill fs-5 text-success"></i>
                             </div>
                         </div>
-
                         <div className="d-flex gap-2 mb-4 overflow-auto hide-scrollbar pb-2 flex-shrink-0">
                             {categories.map((cat) => (
                                 <Button
@@ -374,7 +342,6 @@ const Menu = () => {
                                 </Button>
                             ))}
                         </div>
-
                         {searchTerm.trim() !== '' && menuItems.length === 0 ? (
                             <div className="d-flex flex-column align-items-center justify-content-center flex-grow-1 text-muted">
                                 <i className="bi bi-emoji-frown fs-1 mb-2"></i>
@@ -404,8 +371,6 @@ const Menu = () => {
                                                     ) : (
                                                         <i className="bi bi-image fs-1"></i>
                                                     )}
-
-                                                    {/* Nhãn hiển thị Tạm hết trực tiếp trên ảnh */}
                                                     {item.isTamHet && (
                                                         <Badge
                                                             bg="dark"
@@ -416,17 +381,14 @@ const Menu = () => {
                                                         </Badge>
                                                     )}
                                                 </div>
-
                                                 <Card.Body className="d-flex flex-column p-3">
                                                     <Card.Title className="fw-bold mb-1" style={{ fontSize: '14px', color: item.isTamHet ? '#888' : '#212529' }}>
                                                         {item.name}
                                                     </Card.Title>
-
                                                     <div className="d-flex justify-content-between align-items-center mt-auto pt-2">
                                                         <span className="fw-bold" style={{ fontSize: '14px', color: item.isTamHet ? '#999' : '#1E3923' }}>
                                                             {formatVND(item.price)}
                                                         </span>
-
                                                         {item.isTamHet ? (
                                                             <span className="badge bg-secondary text-white py-1 px-2" style={{ fontSize: '0.75rem' }}>
                                                                 Hết hàng
@@ -496,8 +458,6 @@ const Menu = () => {
                             </Row>
                         )}
                     </Col>
-
-                    {/* Panel giỏ hàng Desktop */}
                     <Col lg={4} xl={4} className="h-100 pb-4 d-none d-lg-block">
                         <Card className="shadow-sm border-0 rounded-4 h-100 bg-white d-flex flex-column">
                             <Card.Body className="d-flex flex-column p-3 overflow-hidden">
@@ -507,8 +467,6 @@ const Menu = () => {
                     </Col>
                 </Row>
             </div>
-
-            {/* Thanh giỏ hàng Mobile */}
             <div
                 className="d-lg-none cart-floating-bar"
                 onClick={() => setShowCart(true)}
@@ -528,8 +486,6 @@ const Menu = () => {
                     <i className="bi bi-chevron-up"></i>
                 </div>
             </div>
-
-            {/* Offcanvas Giỏ hàng Mobile */}
             <Offcanvas
                 show={showCart}
                 onHide={() => setShowCart(false)}
@@ -544,7 +500,6 @@ const Menu = () => {
                     {renderCartPanel()}
                 </Offcanvas.Body>
             </Offcanvas>
-
             <style>{`
                 .cart-floating-bar {
                     position: fixed;
@@ -561,7 +516,6 @@ const Menu = () => {
                     box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.15);
                     cursor: pointer;
                 }
-
                 @media (max-width: 991.98px) {
                     .menu-items-scroll {
                         padding-bottom: 90px !important;

@@ -15,7 +15,6 @@ const TransactionTable = ({
         if (!amount || amount === 0) return '0 đ';
         return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
     };
-
     const formatDateTime = (timeStr) => {
         if (!timeStr) return { date: '—', time: '—' };
         try {
@@ -32,7 +31,6 @@ const TransactionTable = ({
             return { date: timeStr, time: '' };
         }
     };
-
     const renderPaymentMethod = (method) => {
         const m = (method || '').toLowerCase();
         if (m.includes('tiền mặt') || m.includes('cash')) {
@@ -46,7 +44,6 @@ const TransactionTable = ({
         }
         return <div className="d-flex align-items-center text-muted" style={{ fontWeight: '500' }}><BsSlashCircle className="me-2 fs-5" /> {method || '—'}</div>;
     };
-
     if (isLoading) {
         return (
             <div className="d-flex justify-content-center align-items-center h-100 p-5 bg-white rounded-4 shadow-sm">
@@ -55,14 +52,12 @@ const TransactionTable = ({
             </div>
         );
     }
-
     if (error) {
         return <Alert variant="danger" className="m-2 shadow-sm border-0">Lỗi tải dữ liệu: {error}</Alert>;
     }
 
     return (
         <div className="d-flex flex-column h-100 bg-white rounded-4 shadow-sm overflow-hidden border">
-            {/* VÙNG BẢNG CUỘN ĐỘC LẬP */}
             <div className="flex-grow-1 overflow-auto">
                 <Table hover responsive className="align-middle border-0 mb-0" style={{ minWidth: '850px' }}>
                     <thead style={{ backgroundColor: '#f8faf8', position: 'sticky', top: 0, zIndex: 2 }}>
@@ -143,13 +138,10 @@ const TransactionTable = ({
                     </tbody>
                 </Table>
             </div>
-
-            {/* PHẦN FOOTER VÀ PHÂN TRANG: CỐ ĐỊNH Ở ĐÁY HỘP */}
             <div className="d-flex flex-shrink-0 justify-content-between align-items-center px-4 py-3 border-top bg-white" style={{ borderColor: '#f3f4f6' }}>
                 <div className="text-muted small">
                     Tổng số: <strong>{totalItems}</strong> hóa đơn (Trang <strong>{currentPage}</strong> / <strong>{totalPages}</strong>)
                 </div>
-
                 <div className="d-flex gap-1 align-items-center">
                     <Button
                         variant="light"
@@ -161,7 +153,6 @@ const TransactionTable = ({
                     >
                         <BsChevronLeft size={13} />
                     </Button>
-
                     {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
                         <Button
                             key={page}
@@ -179,7 +170,6 @@ const TransactionTable = ({
                             {page}
                         </Button>
                     ))}
-
                     <Button
                         variant="light"
                         size="sm"

@@ -2,8 +2,6 @@ import axios from 'axios';
 
 const host = window.location.hostname;
 const API_BASE_URL = `http://${host}:5000/api`;
-
-// --- QUẢN LÝ NHÂN VIÊN ---
 export const getAllStaff = async () => {
     try {
         const response = await axios.get(`${API_BASE_URL}/NhanVien`); // Đảm bảo route này khớp với Controller bên C# của bạn
@@ -13,7 +11,6 @@ export const getAllStaff = async () => {
         return [];
     }
 };
-
 export const createStaff = async (staffData) => {
     try {
         const response = await axios.post(`${API_BASE_URL}/NhanVien`, staffData);
@@ -23,7 +20,6 @@ export const createStaff = async (staffData) => {
         throw error;
     }
 };
-
 export const deleteStaff = async (id) => {
     try {
         const response = await axios.delete(`${API_BASE_URL}/NhanVien/${id}`);
@@ -33,11 +29,8 @@ export const deleteStaff = async (id) => {
         throw error;
     }
 };
-
-// --- THỐNG KÊ / BÁO CÁO (Trang chủ) ---
 export const getDashboardStats = async () => {
     try {
-        // Bạn có thể tạo một API tương ứng ở Backend C# để trả về doanh thu, tổng đơn,...
         const response = await axios.get(`${API_BASE_URL}/Dashboard/stats`);
         return response.data;
     } catch (error) {

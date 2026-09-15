@@ -4,7 +4,6 @@ import { Link, useLocation } from 'react-router-dom';
 
 const SidebarNavItem = ({ to, icon, label, showDot = false }) => {
     const location = useLocation();
-
     const isActive = location.pathname === to ||
         location.pathname.endsWith(`/${to}`) ||
         location.pathname.includes(`/${to}/`);
@@ -19,7 +18,7 @@ const SidebarNavItem = ({ to, icon, label, showDot = false }) => {
                 color: isActive ? '#ffffff' : '#5c5c5c',
                 position: 'relative'
             }}
-            title={label} /* Giúp hiển thị tooltip khi sidebar thu nhỏ */
+            title={label}
         >
             <span className="d-flex align-items-center justify-content-center" style={{ width: '22px', position: 'relative', flexShrink: 0 }}>
                 {icon}
