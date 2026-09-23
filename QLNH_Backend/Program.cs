@@ -19,17 +19,16 @@ var secretKey = jwtSettings["Key"];
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 
-// Cấu hình Swagger UI có nút Authorize
 builder.Services.AddSwaggerGen(options =>
 {
     options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         Name = "Authorization",
         Type = SecuritySchemeType.Http,
-        Scheme = "Bearer",
+        Scheme = "bearer",
         BearerFormat = "JWT",
         In = ParameterLocation.Header,
-        Description = "Nhập JWT token theo dạng: Bearer {token}"
+        Description = "Nhập JWT token (không cần gõ chữ Bearer)"
     });
 
     options.AddSecurityRequirement(new OpenApiSecurityRequirement
@@ -51,7 +50,6 @@ builder.Services.AddSwaggerGen(options =>
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(connectionString));
 
-// Inject các dịch vụ (Services & Repositories)
 builder.Services.AddScoped<UserDAL>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<ICheckoutService, CheckoutService>();
