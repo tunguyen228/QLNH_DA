@@ -1,0 +1,16 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QLNH", "QLNH.csproj", "{F77824ED-F385-4624-ACC1-A4CB3F1B5D39}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{F77824ED-F385-4624-ACC1-A4CB3F1B5D39}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F77824ED-F385-4624-ACC1-A4CB3F1B5D39}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F77824ED-F385-4624-ACC1-A4CB3F1B5D39}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F77824ED-F385-4624-ACC1-A4CB3F1B5D39}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
